@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file payroll/v1/payroll.proto.
  */
 export const file_payroll_v1_payroll: GenFile = /*@__PURE__*/
-  fileDesc("ChhwYXlyb2xsL3YxL3BheXJvbGwucHJvdG8SFHdvcmtmb3JjZS5wYXlyb2xsLnYxIsgBCgZQYXlSdW4SCgoCaWQYASABKAkSEwoLZW1wbG95ZWVfaWQYAiABKAkSFAoMcGVyaW9kX3N0YXJ0GAMgASgJEhIKCnBlcmlvZF9lbmQYBCABKAkSKQoFZ3Jvc3MYBSABKAsyGi53b3JrZm9yY2UuY29tbW9uLnYxLk1vbmV5EicKA25ldBgGIAEoCzIaLndvcmtmb3JjZS5jb21tb24udjEuTW9uZXkSDgoGc3RhdHVzGAcgASgJEg8KB3BhaWRfYXQYCCABKAkiUAoRR2V0UGF5cm9sbFJlcXVlc3QSEwoLZW1wbG95ZWVfaWQYASABKAkSFwoKcGF5X3BlcmlvZBgCIAEoCUgAiAEBQg0KC19wYXlfcGVyaW9kIlkKEkdldFBheXJvbGxSZXNwb25zZRITCgtlbXBsb3llZV9pZBgBIAEoCRIuCghwYXlfcnVucxgCIAMoCzIcLndvcmtmb3JjZS5wYXlyb2xsLnYxLlBheVJ1biKTAQoLUGF5U2NoZWR1bGUSCgoCaWQYASABKAkSEwoLZW1wbG95ZWVfaWQYAiABKAkSNAoJZnJlcXVlbmN5GAMgASgOMiEud29ya2ZvcmNlLmNvbW1vbi52MS5QYXlGcmVxdWVuY3kSFgoOZWZmZWN0aXZlX2RhdGUYBCABKAkSFQoNbmV4dF9wYXlfZGF0ZRgFIAEoCSIsChVHZXRQYXlTY2hlZHVsZVJlcXVlc3QSEwoLZW1wbG95ZWVfaWQYASABKAkikQEKEkxpc3RQYXlSdW5zUmVxdWVzdBITCgtlbXBsb3llZV9pZBgBIAEoCRI3CgpkYXRlX3JhbmdlGAIgASgLMh4ud29ya2ZvcmNlLmNvbW1vbi52MS5EYXRlUmFuZ2VIAIgBARITCgZzdGF0dXMYAyABKAlIAYgBAUINCgtfZGF0ZV9yYW5nZUIJCgdfc3RhdHVzIloKE0xpc3RQYXlSdW5zUmVzcG9uc2USLgoIcGF5X3J1bnMYASADKAsyHC53b3JrZm9yY2UucGF5cm9sbC52MS5QYXlSdW4SEwoLdG90YWxfY291bnQYAiABKAUytwIKDlBheXJvbGxTZXJ2aWNlEl8KCkdldFBheXJvbGwSJy53b3JrZm9yY2UucGF5cm9sbC52MS5HZXRQYXlyb2xsUmVxdWVzdBooLndvcmtmb3JjZS5wYXlyb2xsLnYxLkdldFBheXJvbGxSZXNwb25zZRJgCg5HZXRQYXlTY2hlZHVsZRIrLndvcmtmb3JjZS5wYXlyb2xsLnYxLkdldFBheVNjaGVkdWxlUmVxdWVzdBohLndvcmtmb3JjZS5wYXlyb2xsLnYxLlBheVNjaGVkdWxlEmIKC0xpc3RQYXlSdW5zEigud29ya2ZvcmNlLnBheXJvbGwudjEuTGlzdFBheVJ1bnNSZXF1ZXN0Gikud29ya2ZvcmNlLnBheXJvbGwudjEuTGlzdFBheVJ1bnNSZXNwb25zZUIoWiZvdHRvL2ludGVybmFsL2dlbi9wYXlyb2xsL3YxO3BheXJvbGx2MWIGcHJvdG8z", [file_common_v1_common]);
+  fileDesc("ChhwYXlyb2xsL3YxL3BheXJvbGwucHJvdG8SFHdvcmtmb3JjZS5wYXlyb2xsLnYxIsgBCgZQYXlSdW4SCgoCaWQYASABKAkSEwoLZW1wbG95ZWVfaWQYAiABKAkSFAoMcGVyaW9kX3N0YXJ0GAMgASgJEhIKCnBlcmlvZF9lbmQYBCABKAkSKQoFZ3Jvc3MYBSABKAsyGi53b3JrZm9yY2UuY29tbW9uLnYxLk1vbmV5EicKA25ldBgGIAEoCzIaLndvcmtmb3JjZS5jb21tb24udjEuTW9uZXkSDgoGc3RhdHVzGAcgASgJEg8KB3BhaWRfYXQYCCABKAkiUAoRR2V0UGF5cm9sbFJlcXVlc3QSEwoLZW1wbG95ZWVfaWQYASABKAkSFwoKcGF5X3BlcmlvZBgCIAEoCUgAiAEBQg0KC19wYXlfcGVyaW9kIlkKEkdldFBheXJvbGxSZXNwb25zZRITCgtlbXBsb3llZV9pZBgBIAEoCRIuCghwYXlfcnVucxgCIAMoCzIcLndvcmtmb3JjZS5wYXlyb2xsLnYxLlBheVJ1biKTAQoLUGF5U2NoZWR1bGUSCgoCaWQYASABKAkSEwoLZW1wbG95ZWVfaWQYAiABKAkSNAoJZnJlcXVlbmN5GAMgASgOMiEud29ya2ZvcmNlLmNvbW1vbi52MS5QYXlGcmVxdWVuY3kSFgoOZWZmZWN0aXZlX2RhdGUYBCABKAkSFQoNbmV4dF9wYXlfZGF0ZRgFIAEoCSIsChVHZXRQYXlTY2hlZHVsZVJlcXVlc3QSEwoLZW1wbG95ZWVfaWQYASABKAkikQEKEkxpc3RQYXlSdW5zUmVxdWVzdBITCgtlbXBsb3llZV9pZBgBIAEoCRI3CgpkYXRlX3JhbmdlGAIgASgLMh4ud29ya2ZvcmNlLmNvbW1vbi52MS5EYXRlUmFuZ2VIAIgBARITCgZzdGF0dXMYAyABKAlIAYgBAUINCgtfZGF0ZV9yYW5nZUIJCgdfc3RhdHVzIloKE0xpc3RQYXlSdW5zUmVzcG9uc2USLgoIcGF5X3J1bnMYASADKAsyHC53b3JrZm9yY2UucGF5cm9sbC52MS5QYXlSdW4SEwoLdG90YWxfY291bnQYAiABKAUi4wEKCFBheVJhdGVzEgoKAmlkGAEgASgJEhMKC2VtcGxveWVlX2lkGAIgASgJEhUKDWN1cnJlbmN5X2NvZGUYAyABKAkSFgoOZGF5X3JhdGVfY2VudHMYBCABKAMSGAoQbmlnaHRfcmF0ZV9jZW50cxgFIAEoAxIaChJ3ZWVrZW5kX3JhdGVfY2VudHMYBiABKAMSGwoTb3ZlcnRpbWVfcmF0ZV9jZW50cxgHIAEoAxIgChhvdmVydGltZV90aHJlc2hvbGRfaG91cnMYCCABKAESEgoKdXBkYXRlZF9hdBgJIAEoCSIpChJHZXRQYXlSYXRlc1JlcXVlc3QSEwoLZW1wbG95ZWVfaWQYASABKAki7wEKElNldFBheVJhdGVzUmVxdWVzdBITCgtlbXBsb3llZV9pZBgBIAEoCRIVCg1jdXJyZW5jeV9jb2RlGAIgASgJEhYKDmRheV9yYXRlX2NlbnRzGAMgASgDEhgKEG5pZ2h0X3JhdGVfY2VudHMYBCABKAMSGgoSd2Vla2VuZF9yYXRlX2NlbnRzGAUgASgDEhsKE292ZXJ0aW1lX3JhdGVfY2VudHMYBiABKAMSJQoYb3ZlcnRpbWVfdGhyZXNob2xkX2hvdXJzGAcgASgBSACIAQFCGwoZX292ZXJ0aW1lX3RocmVzaG9sZF9ob3VycyJ5ChpDYWxjdWxhdGVQYXlQcmV2aWV3UmVxdWVzdBITCgtlbXBsb3llZV9pZBgBIAEoCRI3CgpkYXRlX3JhbmdlGAIgASgLMh4ud29ya2ZvcmNlLmNvbW1vbi52MS5EYXRlUmFuZ2VIAIgBAUINCgtfZGF0ZV9yYW5nZSKiBAoKUGF5UHJldmlldxITCgtlbXBsb3llZV9pZBgBIAEoCRIUCgxwZXJpb2Rfc3RhcnQYAiABKAkSEgoKcGVyaW9kX2VuZBgDIAEoCRIZChFyZWd1bGFyX2RheV9ob3VycxgEIAEoARIbChNyZWd1bGFyX25pZ2h0X2hvdXJzGAUgASgBEhUKDXdlZWtlbmRfaG91cnMYBiABKAESFgoOb3ZlcnRpbWVfaG91cnMYByABKAESMAoMZGF5X2Vhcm5pbmdzGAggASgLMhoud29ya2ZvcmNlLmNvbW1vbi52MS5Nb25leRIyCg5uaWdodF9lYXJuaW5ncxgJIAEoCzIaLndvcmtmb3JjZS5jb21tb24udjEuTW9uZXkSNAoQd2Vla2VuZF9lYXJuaW5ncxgKIAEoCzIaLndvcmtmb3JjZS5jb21tb24udjEuTW9uZXkSNQoRb3ZlcnRpbWVfZWFybmluZ3MYCyABKAsyGi53b3JrZm9yY2UuY29tbW9uLnYxLk1vbmV5EjIKDmVhcm5lZF90b19kYXRlGAwgASgLMhoud29ya2ZvcmNlLmNvbW1vbi52MS5Nb25leRIzCg9wcm9qZWN0ZWRfdG90YWwYDSABKAsyGi53b3JrZm9yY2UuY29tbW9uLnYxLk1vbmV5EhgKEGNvbXBsZXRlZF9zaGlmdHMYDiABKAUSGAoQc2NoZWR1bGVkX3NoaWZ0cxgPIAEoBTLUBAoOUGF5cm9sbFNlcnZpY2USXwoKR2V0UGF5cm9sbBInLndvcmtmb3JjZS5wYXlyb2xsLnYxLkdldFBheXJvbGxSZXF1ZXN0Gigud29ya2ZvcmNlLnBheXJvbGwudjEuR2V0UGF5cm9sbFJlc3BvbnNlEmAKDkdldFBheVNjaGVkdWxlEisud29ya2ZvcmNlLnBheXJvbGwudjEuR2V0UGF5U2NoZWR1bGVSZXF1ZXN0GiEud29ya2ZvcmNlLnBheXJvbGwudjEuUGF5U2NoZWR1bGUSYgoLTGlzdFBheVJ1bnMSKC53b3JrZm9yY2UucGF5cm9sbC52MS5MaXN0UGF5UnVuc1JlcXVlc3QaKS53b3JrZm9yY2UucGF5cm9sbC52MS5MaXN0UGF5UnVuc1Jlc3BvbnNlElcKC0dldFBheVJhdGVzEigud29ya2ZvcmNlLnBheXJvbGwudjEuR2V0UGF5UmF0ZXNSZXF1ZXN0Gh4ud29ya2ZvcmNlLnBheXJvbGwudjEuUGF5UmF0ZXMSVwoLU2V0UGF5UmF0ZXMSKC53b3JrZm9yY2UucGF5cm9sbC52MS5TZXRQYXlSYXRlc1JlcXVlc3QaHi53b3JrZm9yY2UucGF5cm9sbC52MS5QYXlSYXRlcxJpChNDYWxjdWxhdGVQYXlQcmV2aWV3EjAud29ya2ZvcmNlLnBheXJvbGwudjEuQ2FsY3VsYXRlUGF5UHJldmlld1JlcXVlc3QaIC53b3JrZm9yY2UucGF5cm9sbC52MS5QYXlQcmV2aWV3QihaJm90dG8vaW50ZXJuYWwvZ2VuL3BheXJvbGwvdjE7cGF5cm9sbHYxYgZwcm90bzM", [file_common_v1_common]);
 
 /**
  * PayRun represents a single pay disbursement for one employee.
@@ -269,6 +269,295 @@ export const ListPayRunsResponseSchema: GenMessage<ListPayRunsResponse> = /*@__P
   messageDesc(file_payroll_v1_payroll, 6);
 
 /**
+ * PayRates holds the hourly rate card for one employee.
+ *
+ * @generated from message workforce.payroll.v1.PayRates
+ */
+export type PayRates = Message<"workforce.payroll.v1.PayRates"> & {
+  /**
+   * Unique identifier for this rate record.
+   *
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * The employee these rates apply to.
+   *
+   * @generated from field: string employee_id = 2;
+   */
+  employeeId: string;
+
+  /**
+   * ISO 4217 currency code, e.g. "USD".
+   *
+   * @generated from field: string currency_code = 3;
+   */
+  currencyCode: string;
+
+  /**
+   * Weekday daytime rate (06:00–18:00 UTC), in currency minor units per hour.
+   *
+   * @generated from field: int64 day_rate_cents = 4;
+   */
+  dayRateCents: bigint;
+
+  /**
+   * Weekday night rate (18:00–06:00 UTC), in currency minor units per hour.
+   *
+   * @generated from field: int64 night_rate_cents = 5;
+   */
+  nightRateCents: bigint;
+
+  /**
+   * Weekend rate (Saturday & Sunday, all hours), in currency minor units per hour.
+   *
+   * @generated from field: int64 weekend_rate_cents = 6;
+   */
+  weekendRateCents: bigint;
+
+  /**
+   * Rate applied to weekday hours that exceed overtime_threshold_hours in a week.
+   *
+   * @generated from field: int64 overtime_rate_cents = 7;
+   */
+  overtimeRateCents: bigint;
+
+  /**
+   * Weekly hour threshold after which overtime applies (default 40.0).
+   *
+   * @generated from field: double overtime_threshold_hours = 8;
+   */
+  overtimeThresholdHours: number;
+
+  /**
+   * ISO 8601 timestamp of the last update.
+   *
+   * @generated from field: string updated_at = 9;
+   */
+  updatedAt: string;
+};
+
+/**
+ * Describes the message workforce.payroll.v1.PayRates.
+ * Use `create(PayRatesSchema)` to create a new message.
+ */
+export const PayRatesSchema: GenMessage<PayRates> = /*@__PURE__*/
+  messageDesc(file_payroll_v1_payroll, 7);
+
+/**
+ * GetPayRatesRequest identifies the employee whose rate card is needed.
+ *
+ * @generated from message workforce.payroll.v1.GetPayRatesRequest
+ */
+export type GetPayRatesRequest = Message<"workforce.payroll.v1.GetPayRatesRequest"> & {
+  /**
+   * @generated from field: string employee_id = 1;
+   */
+  employeeId: string;
+};
+
+/**
+ * Describes the message workforce.payroll.v1.GetPayRatesRequest.
+ * Use `create(GetPayRatesRequestSchema)` to create a new message.
+ */
+export const GetPayRatesRequestSchema: GenMessage<GetPayRatesRequest> = /*@__PURE__*/
+  messageDesc(file_payroll_v1_payroll, 8);
+
+/**
+ * SetPayRatesRequest creates or replaces the hourly rate card for an employee.
+ *
+ * @generated from message workforce.payroll.v1.SetPayRatesRequest
+ */
+export type SetPayRatesRequest = Message<"workforce.payroll.v1.SetPayRatesRequest"> & {
+  /**
+   * @generated from field: string employee_id = 1;
+   */
+  employeeId: string;
+
+  /**
+   * @generated from field: string currency_code = 2;
+   */
+  currencyCode: string;
+
+  /**
+   * @generated from field: int64 day_rate_cents = 3;
+   */
+  dayRateCents: bigint;
+
+  /**
+   * @generated from field: int64 night_rate_cents = 4;
+   */
+  nightRateCents: bigint;
+
+  /**
+   * @generated from field: int64 weekend_rate_cents = 5;
+   */
+  weekendRateCents: bigint;
+
+  /**
+   * @generated from field: int64 overtime_rate_cents = 6;
+   */
+  overtimeRateCents: bigint;
+
+  /**
+   * Weekly overtime threshold in hours; defaults to 40.0 if omitted.
+   *
+   * @generated from field: optional double overtime_threshold_hours = 7;
+   */
+  overtimeThresholdHours?: number | undefined;
+};
+
+/**
+ * Describes the message workforce.payroll.v1.SetPayRatesRequest.
+ * Use `create(SetPayRatesRequestSchema)` to create a new message.
+ */
+export const SetPayRatesRequestSchema: GenMessage<SetPayRatesRequest> = /*@__PURE__*/
+  messageDesc(file_payroll_v1_payroll, 9);
+
+/**
+ * CalculatePayPreviewRequest requests a real-time pay estimate.
+ *
+ * @generated from message workforce.payroll.v1.CalculatePayPreviewRequest
+ */
+export type CalculatePayPreviewRequest = Message<"workforce.payroll.v1.CalculatePayPreviewRequest"> & {
+  /**
+   * UUID of the employee.
+   *
+   * @generated from field: string employee_id = 1;
+   */
+  employeeId: string;
+
+  /**
+   * Date range to calculate over.  Defaults to the current calendar month
+   * when omitted.
+   *
+   * @generated from field: optional workforce.common.v1.DateRange date_range = 2;
+   */
+  dateRange?: DateRange | undefined;
+};
+
+/**
+ * Describes the message workforce.payroll.v1.CalculatePayPreviewRequest.
+ * Use `create(CalculatePayPreviewRequestSchema)` to create a new message.
+ */
+export const CalculatePayPreviewRequestSchema: GenMessage<CalculatePayPreviewRequest> = /*@__PURE__*/
+  messageDesc(file_payroll_v1_payroll, 10);
+
+/**
+ * PayPreview is the result of a real-time pay calculation.  Hours and
+ * earnings are broken down by rate type; overtime hours are already
+ * deducted from the regular day/night totals.
+ *
+ * @generated from message workforce.payroll.v1.PayPreview
+ */
+export type PayPreview = Message<"workforce.payroll.v1.PayPreview"> & {
+  /**
+   * @generated from field: string employee_id = 1;
+   */
+  employeeId: string;
+
+  /**
+   * Inclusive start of the evaluated period (ISO 8601 date).
+   *
+   * @generated from field: string period_start = 2;
+   */
+  periodStart: string;
+
+  /**
+   * Inclusive end of the evaluated period (ISO 8601 date).
+   *
+   * @generated from field: string period_end = 3;
+   */
+  periodEnd: string;
+
+  /**
+   * ── Hours breakdown ──────────────────────────────────────────────────────
+   * Weekday daytime hours (after overtime is deducted).
+   *
+   * @generated from field: double regular_day_hours = 4;
+   */
+  regularDayHours: number;
+
+  /**
+   * Weekday night hours (after overtime is deducted).
+   *
+   * @generated from field: double regular_night_hours = 5;
+   */
+  regularNightHours: number;
+
+  /**
+   * Weekend hours (Saturday & Sunday).
+   *
+   * @generated from field: double weekend_hours = 6;
+   */
+  weekendHours: number;
+
+  /**
+   * Weekday hours that exceeded the weekly overtime threshold.
+   *
+   * @generated from field: double overtime_hours = 7;
+   */
+  overtimeHours: number;
+
+  /**
+   * ── Earnings breakdown ───────────────────────────────────────────────────
+   *
+   * @generated from field: workforce.common.v1.Money day_earnings = 8;
+   */
+  dayEarnings?: Money | undefined;
+
+  /**
+   * @generated from field: workforce.common.v1.Money night_earnings = 9;
+   */
+  nightEarnings?: Money | undefined;
+
+  /**
+   * @generated from field: workforce.common.v1.Money weekend_earnings = 10;
+   */
+  weekendEarnings?: Money | undefined;
+
+  /**
+   * @generated from field: workforce.common.v1.Money overtime_earnings = 11;
+   */
+  overtimeEarnings?: Money | undefined;
+
+  /**
+   * ── Totals ───────────────────────────────────────────────────────────────
+   * Gross earnings from COMPLETED shifts only.
+   *
+   * @generated from field: workforce.common.v1.Money earned_to_date = 12;
+   */
+  earnedToDate?: Money | undefined;
+
+  /**
+   * Gross earnings projected from all COMPLETED + SCHEDULED shifts in the period.
+   *
+   * @generated from field: workforce.common.v1.Money projected_total = 13;
+   */
+  projectedTotal?: Money | undefined;
+
+  /**
+   * ── Shift counts ─────────────────────────────────────────────────────────
+   *
+   * @generated from field: int32 completed_shifts = 14;
+   */
+  completedShifts: number;
+
+  /**
+   * @generated from field: int32 scheduled_shifts = 15;
+   */
+  scheduledShifts: number;
+};
+
+/**
+ * Describes the message workforce.payroll.v1.PayPreview.
+ * Use `create(PayPreviewSchema)` to create a new message.
+ */
+export const PayPreviewSchema: GenMessage<PayPreview> = /*@__PURE__*/
+  messageDesc(file_payroll_v1_payroll, 11);
+
+/**
  * @generated from service workforce.payroll.v1.PayrollService
  */
 export const PayrollService: GenService<{
@@ -304,6 +593,39 @@ export const PayrollService: GenService<{
     methodKind: "unary";
     input: typeof ListPayRunsRequestSchema;
     output: typeof ListPayRunsResponseSchema;
+  },
+  /**
+   * GetPayRates returns the configured hourly rate card for an employee
+   * (day, night, weekend, and overtime rates).
+   *
+   * @generated from rpc workforce.payroll.v1.PayrollService.GetPayRates
+   */
+  getPayRates: {
+    methodKind: "unary";
+    input: typeof GetPayRatesRequestSchema;
+    output: typeof PayRatesSchema;
+  },
+  /**
+   * SetPayRates creates or replaces the hourly rate card for an employee.
+   *
+   * @generated from rpc workforce.payroll.v1.PayrollService.SetPayRates
+   */
+  setPayRates: {
+    methodKind: "unary";
+    input: typeof SetPayRatesRequestSchema;
+    output: typeof PayRatesSchema;
+  },
+  /**
+   * CalculatePayPreview computes a real-time pay breakdown for an employee
+   * across a date range, applying day/night/weekend/overtime rates to each
+   * logged shift, and projects an end-of-period total from scheduled shifts.
+   *
+   * @generated from rpc workforce.payroll.v1.PayrollService.CalculatePayPreview
+   */
+  calculatePayPreview: {
+    methodKind: "unary";
+    input: typeof CalculatePayPreviewRequestSchema;
+    output: typeof PayPreviewSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_payroll_v1_payroll, 0);

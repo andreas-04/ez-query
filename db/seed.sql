@@ -11,6 +11,7 @@
 BEGIN;
 
 -- Cascade truncate clears every dependent table automatically.
+TRUNCATE jobs CASCADE;
 TRUNCATE employees CASCADE;
 
 -- =========================================================================
@@ -224,5 +225,32 @@ INSERT INTO job_locations (job_id, lat, lng) VALUES
   ('05000000-0000-0000-0000-000000000001', 40.6780, -74.0060),
   ('05000000-0000-0000-0000-000000000002', 34.0522, -118.2608),
   ('05000000-0000-0000-0000-000000000003', 41.8958, -87.6243);
+
+-- =========================================================================
+-- Pay Rates   (hourly rates in cents · overtime threshold = 40 hrs/week)
+-- day_rate    = weekday 06:00–18:00 UTC
+-- night_rate  = weekday 18:00–06:00 UTC
+-- weekend_rate = Saturday & Sunday all day
+-- overtime_rate = weekday hours above overtime_threshold_hours per week
+-- =========================================================================
+INSERT INTO pay_rates (id, employee_id, currency_code,
+  day_rate_cents, night_rate_cents, weekend_rate_cents, overtime_rate_cents,
+  overtime_threshold_hours) VALUES
+  -- Alice (emp 1 · OFFICE Engineering  ≈ $55/hr day)
+  ('07000000-0000-0000-0000-000000000001', '01000000-0000-0000-0000-000000000001', 'USD', 5500, 7150, 8250, 8250, 40.00),
+  -- Bob   (emp 2 · FIELD               ≈ $38/hr day)
+  ('07000000-0000-0000-0000-000000000002', '01000000-0000-0000-0000-000000000002', 'USD', 3800, 4940, 5700, 5700, 40.00),
+  -- Carol (emp 3 · OFFICE HR           ≈ $50/hr day)
+  ('07000000-0000-0000-0000-000000000003', '01000000-0000-0000-0000-000000000003', 'USD', 5000, 6500, 7500, 7500, 40.00),
+  -- David (emp 4 · FIELD               ≈ $35/hr day)
+  ('07000000-0000-0000-0000-000000000004', '01000000-0000-0000-0000-000000000004', 'USD', 3500, 4550, 5250, 5250, 40.00),
+  -- Emma  (emp 5 · MIXED Engineering   ≈ $52/hr day)
+  ('07000000-0000-0000-0000-000000000005', '01000000-0000-0000-0000-000000000005', 'USD', 5200, 6760, 7800, 7800, 40.00),
+  -- Frank (emp 6 · FIELD               ≈ $36/hr day)
+  ('07000000-0000-0000-0000-000000000006', '01000000-0000-0000-0000-000000000006', 'USD', 3600, 4680, 5400, 5400, 40.00),
+  -- Grace (emp 7 · OFFICE Administration ≈ $48/hr day)
+  ('07000000-0000-0000-0000-000000000007', '01000000-0000-0000-0000-000000000007', 'USD', 4800, 6240, 7200, 7200, 40.00),
+  -- Henry (emp 8 · MIXED Field Ops     ≈ $42/hr day)
+  ('07000000-0000-0000-0000-000000000008', '01000000-0000-0000-0000-000000000008', 'USD', 4200, 5460, 6300, 6300, 40.00);
 
 COMMIT;

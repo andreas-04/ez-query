@@ -22,6 +22,18 @@ service PayrollService {
   // ListPayRuns returns a filterable, paginated list of pay-run records
   // for an employee, optionally scoped by date range and/or status.
   rpc ListPayRuns(ListPayRunsRequest) returns (ListPayRunsResponse);
+
+  // GetPayRates returns the configured hourly rate card for an employee
+  // (day, night, weekend, and overtime rates).
+  rpc GetPayRates(GetPayRatesRequest) returns (PayRates);
+
+  // SetPayRates creates or replaces the hourly rate card for an employee.
+  rpc SetPayRates(SetPayRatesRequest) returns (PayRates);
+
+  // CalculatePayPreview computes a real-time pay breakdown for an employee
+  // across a date range, applying day/night/weekend/overtime rates to each
+  // logged shift, and projects an end-of-period total from scheduled shifts.
+  rpc CalculatePayPreview(CalculatePayPreviewRequest) returns (PayPreview);
 }
 
 // ---------------------------------------------------------------------------
@@ -98,4 +110,97 @@ message ListPayRunsResponse {
   repeated PayRun pay_runs = 1;
   // Total number of pay runs matching the filter (before any pagination).
   int32 total_count = 2;
+}
+
+// ---------------------------------------------------------------------------
+// Predictive Payroll — Rate Card
+// ---------------------------------------------------------------------------
+
+// PayRates holds the hourly rate card for one employee.
+message PayRates {
+  // Unique identifier for this rate record.
+  string id = 1;
+  // The employee these rates apply to.
+  string employee_id = 2;
+  // ISO 4217 currency code, e.g. "USD".
+  string currency_code = 3;
+  // Weekday daytime rate (06:00–18:00 UTC), in currency minor units per hour.
+  int64 day_rate_cents = 4;
+  // Weekday night rate (18:00–06:00 UTC), in currency minor units per hour.
+  int64 night_rate_cents = 5;
+  // Weekend rate (Saturday & Sunday, all hours), in currency minor units per hour.
+  int64 weekend_rate_cents = 6;
+  // Rate applied to weekday hours that exceed overtime_threshold_hours in a week.
+  int64 overtime_rate_cents = 7;
+  // Weekly hour threshold after which overtime applies (default 40.0).
+  double overtime_threshold_hours = 8;
+  // ISO 8601 timestamp of the last update.
+  string updated_at = 9;
+}
+
+// GetPayRatesRequest identifies the employee whose rate card is needed.
+message GetPayRatesRequest {
+  string employee_id = 1;
+}
+
+// SetPayRatesRequest creates or replaces the hourly rate card for an employee.
+message SetPayRatesRequest {
+  string employee_id = 1;
+  string currency_code = 2;
+  int64 day_rate_cents = 3;
+  int64 night_rate_cents = 4;
+  int64 weekend_rate_cents = 5;
+  int64 overtime_rate_cents = 6;
+  // Weekly overtime threshold in hours; defaults to 40.0 if omitted.
+  optional double overtime_threshold_hours = 7;
+}
+
+// ---------------------------------------------------------------------------
+// Predictive Payroll — Pay Preview
+// ---------------------------------------------------------------------------
+
+// CalculatePayPreviewRequest requests a real-time pay estimate.
+message CalculatePayPreviewRequest {
+  // UUID of the employee.
+  string employee_id = 1;
+  // Date range to calculate over.  Defaults to the current calendar month
+  // when omitted.
+  optional workforce.common.v1.DateRange date_range = 2;
+}
+
+// PayPreview is the result of a real-time pay calculation.  Hours and
+// earnings are broken down by rate type; overtime hours are already
+// deducted from the regular day/night totals.
+message PayPreview {
+  string employee_id = 1;
+  // Inclusive start of the evaluated period (ISO 8601 date).
+  string period_start = 2;
+  // Inclusive end of the evaluated period (ISO 8601 date).
+  string period_end = 3;
+
+  // ── Hours breakdown ──────────────────────────────────────────────────────
+  // Weekday daytime hours (after overtime is deducted).
+  double regular_day_hours = 4;
+  // Weekday night hours (after overtime is deducted).
+  double regular_night_hours = 5;
+  // Weekend hours (Saturday & Sunday).
+  double weekend_hours = 6;
+  // Weekday hours that exceeded the weekly overtime threshold.
+  double overtime_hours = 7;
+
+  // ── Earnings breakdown ───────────────────────────────────────────────────
+  workforce.common.v1.Money day_earnings = 8;
+  workforce.common.v1.Money night_earnings = 9;
+  workforce.common.v1.Money weekend_earnings = 10;
+  workforce.common.v1.Money overtime_earnings = 11;
+
+  // ── Totals ───────────────────────────────────────────────────────────────
+  // Gross earnings from COMPLETED shifts only.
+  workforce.common.v1.Money earned_to_date = 12;
+  // Gross earnings projected from all COMPLETED + SCHEDULED shifts in the period.
+  workforce.common.v1.Money projected_total = 13;
+
+  // ── Shift counts ─────────────────────────────────────────────────────────
+  int32 completed_shifts = 14;
+  int32 scheduled_shifts = 15;
 }

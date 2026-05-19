@@ -486,6 +486,490 @@ func (x *ListPayRunsResponse) GetTotalCount() int32 {
 	return 0
 }
 
+// PayRates holds the hourly rate card for one employee.
+type PayRates struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Unique identifier for this rate record.
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// The employee these rates apply to.
+	EmployeeId string `protobuf:"bytes,2,opt,name=employee_id,json=employeeId,proto3" json:"employee_id,omitempty"`
+	// ISO 4217 currency code, e.g. "USD".
+	CurrencyCode string `protobuf:"bytes,3,opt,name=currency_code,json=currencyCode,proto3" json:"currency_code,omitempty"`
+	// Weekday daytime rate (06:00–18:00 UTC), in currency minor units per hour.
+	DayRateCents int64 `protobuf:"varint,4,opt,name=day_rate_cents,json=dayRateCents,proto3" json:"day_rate_cents,omitempty"`
+	// Weekday night rate (18:00–06:00 UTC), in currency minor units per hour.
+	NightRateCents int64 `protobuf:"varint,5,opt,name=night_rate_cents,json=nightRateCents,proto3" json:"night_rate_cents,omitempty"`
+	// Weekend rate (Saturday & Sunday, all hours), in currency minor units per hour.
+	WeekendRateCents int64 `protobuf:"varint,6,opt,name=weekend_rate_cents,json=weekendRateCents,proto3" json:"weekend_rate_cents,omitempty"`
+	// Rate applied to weekday hours that exceed overtime_threshold_hours in a week.
+	OvertimeRateCents int64 `protobuf:"varint,7,opt,name=overtime_rate_cents,json=overtimeRateCents,proto3" json:"overtime_rate_cents,omitempty"`
+	// Weekly hour threshold after which overtime applies (default 40.0).
+	OvertimeThresholdHours float64 `protobuf:"fixed64,8,opt,name=overtime_threshold_hours,json=overtimeThresholdHours,proto3" json:"overtime_threshold_hours,omitempty"`
+	// ISO 8601 timestamp of the last update.
+	UpdatedAt     string `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PayRates) Reset() {
+	*x = PayRates{}
+	mi := &file_payroll_v1_payroll_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PayRates) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PayRates) ProtoMessage() {}
+
+func (x *PayRates) ProtoReflect() protoreflect.Message {
+	mi := &file_payroll_v1_payroll_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PayRates.ProtoReflect.Descriptor instead.
+func (*PayRates) Descriptor() ([]byte, []int) {
+	return file_payroll_v1_payroll_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *PayRates) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *PayRates) GetEmployeeId() string {
+	if x != nil {
+		return x.EmployeeId
+	}
+	return ""
+}
+
+func (x *PayRates) GetCurrencyCode() string {
+	if x != nil {
+		return x.CurrencyCode
+	}
+	return ""
+}
+
+func (x *PayRates) GetDayRateCents() int64 {
+	if x != nil {
+		return x.DayRateCents
+	}
+	return 0
+}
+
+func (x *PayRates) GetNightRateCents() int64 {
+	if x != nil {
+		return x.NightRateCents
+	}
+	return 0
+}
+
+func (x *PayRates) GetWeekendRateCents() int64 {
+	if x != nil {
+		return x.WeekendRateCents
+	}
+	return 0
+}
+
+func (x *PayRates) GetOvertimeRateCents() int64 {
+	if x != nil {
+		return x.OvertimeRateCents
+	}
+	return 0
+}
+
+func (x *PayRates) GetOvertimeThresholdHours() float64 {
+	if x != nil {
+		return x.OvertimeThresholdHours
+	}
+	return 0
+}
+
+func (x *PayRates) GetUpdatedAt() string {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return ""
+}
+
+// GetPayRatesRequest identifies the employee whose rate card is needed.
+type GetPayRatesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EmployeeId    string                 `protobuf:"bytes,1,opt,name=employee_id,json=employeeId,proto3" json:"employee_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPayRatesRequest) Reset() {
+	*x = GetPayRatesRequest{}
+	mi := &file_payroll_v1_payroll_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPayRatesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPayRatesRequest) ProtoMessage() {}
+
+func (x *GetPayRatesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_payroll_v1_payroll_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPayRatesRequest.ProtoReflect.Descriptor instead.
+func (*GetPayRatesRequest) Descriptor() ([]byte, []int) {
+	return file_payroll_v1_payroll_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *GetPayRatesRequest) GetEmployeeId() string {
+	if x != nil {
+		return x.EmployeeId
+	}
+	return ""
+}
+
+// SetPayRatesRequest creates or replaces the hourly rate card for an employee.
+type SetPayRatesRequest struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	EmployeeId        string                 `protobuf:"bytes,1,opt,name=employee_id,json=employeeId,proto3" json:"employee_id,omitempty"`
+	CurrencyCode      string                 `protobuf:"bytes,2,opt,name=currency_code,json=currencyCode,proto3" json:"currency_code,omitempty"`
+	DayRateCents      int64                  `protobuf:"varint,3,opt,name=day_rate_cents,json=dayRateCents,proto3" json:"day_rate_cents,omitempty"`
+	NightRateCents    int64                  `protobuf:"varint,4,opt,name=night_rate_cents,json=nightRateCents,proto3" json:"night_rate_cents,omitempty"`
+	WeekendRateCents  int64                  `protobuf:"varint,5,opt,name=weekend_rate_cents,json=weekendRateCents,proto3" json:"weekend_rate_cents,omitempty"`
+	OvertimeRateCents int64                  `protobuf:"varint,6,opt,name=overtime_rate_cents,json=overtimeRateCents,proto3" json:"overtime_rate_cents,omitempty"`
+	// Weekly overtime threshold in hours; defaults to 40.0 if omitted.
+	OvertimeThresholdHours *float64 `protobuf:"fixed64,7,opt,name=overtime_threshold_hours,json=overtimeThresholdHours,proto3,oneof" json:"overtime_threshold_hours,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
+}
+
+func (x *SetPayRatesRequest) Reset() {
+	*x = SetPayRatesRequest{}
+	mi := &file_payroll_v1_payroll_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetPayRatesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetPayRatesRequest) ProtoMessage() {}
+
+func (x *SetPayRatesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_payroll_v1_payroll_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetPayRatesRequest.ProtoReflect.Descriptor instead.
+func (*SetPayRatesRequest) Descriptor() ([]byte, []int) {
+	return file_payroll_v1_payroll_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *SetPayRatesRequest) GetEmployeeId() string {
+	if x != nil {
+		return x.EmployeeId
+	}
+	return ""
+}
+
+func (x *SetPayRatesRequest) GetCurrencyCode() string {
+	if x != nil {
+		return x.CurrencyCode
+	}
+	return ""
+}
+
+func (x *SetPayRatesRequest) GetDayRateCents() int64 {
+	if x != nil {
+		return x.DayRateCents
+	}
+	return 0
+}
+
+func (x *SetPayRatesRequest) GetNightRateCents() int64 {
+	if x != nil {
+		return x.NightRateCents
+	}
+	return 0
+}
+
+func (x *SetPayRatesRequest) GetWeekendRateCents() int64 {
+	if x != nil {
+		return x.WeekendRateCents
+	}
+	return 0
+}
+
+func (x *SetPayRatesRequest) GetOvertimeRateCents() int64 {
+	if x != nil {
+		return x.OvertimeRateCents
+	}
+	return 0
+}
+
+func (x *SetPayRatesRequest) GetOvertimeThresholdHours() float64 {
+	if x != nil && x.OvertimeThresholdHours != nil {
+		return *x.OvertimeThresholdHours
+	}
+	return 0
+}
+
+// CalculatePayPreviewRequest requests a real-time pay estimate.
+type CalculatePayPreviewRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// UUID of the employee.
+	EmployeeId string `protobuf:"bytes,1,opt,name=employee_id,json=employeeId,proto3" json:"employee_id,omitempty"`
+	// Date range to calculate over.  Defaults to the current calendar month
+	// when omitted.
+	DateRange     *v1.DateRange `protobuf:"bytes,2,opt,name=date_range,json=dateRange,proto3,oneof" json:"date_range,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CalculatePayPreviewRequest) Reset() {
+	*x = CalculatePayPreviewRequest{}
+	mi := &file_payroll_v1_payroll_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CalculatePayPreviewRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CalculatePayPreviewRequest) ProtoMessage() {}
+
+func (x *CalculatePayPreviewRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_payroll_v1_payroll_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CalculatePayPreviewRequest.ProtoReflect.Descriptor instead.
+func (*CalculatePayPreviewRequest) Descriptor() ([]byte, []int) {
+	return file_payroll_v1_payroll_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *CalculatePayPreviewRequest) GetEmployeeId() string {
+	if x != nil {
+		return x.EmployeeId
+	}
+	return ""
+}
+
+func (x *CalculatePayPreviewRequest) GetDateRange() *v1.DateRange {
+	if x != nil {
+		return x.DateRange
+	}
+	return nil
+}
+
+// PayPreview is the result of a real-time pay calculation.  Hours and
+// earnings are broken down by rate type; overtime hours are already
+// deducted from the regular day/night totals.
+type PayPreview struct {
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	EmployeeId string                 `protobuf:"bytes,1,opt,name=employee_id,json=employeeId,proto3" json:"employee_id,omitempty"`
+	// Inclusive start of the evaluated period (ISO 8601 date).
+	PeriodStart string `protobuf:"bytes,2,opt,name=period_start,json=periodStart,proto3" json:"period_start,omitempty"`
+	// Inclusive end of the evaluated period (ISO 8601 date).
+	PeriodEnd string `protobuf:"bytes,3,opt,name=period_end,json=periodEnd,proto3" json:"period_end,omitempty"`
+	// ── Hours breakdown ──────────────────────────────────────────────────────
+	// Weekday daytime hours (after overtime is deducted).
+	RegularDayHours float64 `protobuf:"fixed64,4,opt,name=regular_day_hours,json=regularDayHours,proto3" json:"regular_day_hours,omitempty"`
+	// Weekday night hours (after overtime is deducted).
+	RegularNightHours float64 `protobuf:"fixed64,5,opt,name=regular_night_hours,json=regularNightHours,proto3" json:"regular_night_hours,omitempty"`
+	// Weekend hours (Saturday & Sunday).
+	WeekendHours float64 `protobuf:"fixed64,6,opt,name=weekend_hours,json=weekendHours,proto3" json:"weekend_hours,omitempty"`
+	// Weekday hours that exceeded the weekly overtime threshold.
+	OvertimeHours float64 `protobuf:"fixed64,7,opt,name=overtime_hours,json=overtimeHours,proto3" json:"overtime_hours,omitempty"`
+	// ── Earnings breakdown ───────────────────────────────────────────────────
+	DayEarnings      *v1.Money `protobuf:"bytes,8,opt,name=day_earnings,json=dayEarnings,proto3" json:"day_earnings,omitempty"`
+	NightEarnings    *v1.Money `protobuf:"bytes,9,opt,name=night_earnings,json=nightEarnings,proto3" json:"night_earnings,omitempty"`
+	WeekendEarnings  *v1.Money `protobuf:"bytes,10,opt,name=weekend_earnings,json=weekendEarnings,proto3" json:"weekend_earnings,omitempty"`
+	OvertimeEarnings *v1.Money `protobuf:"bytes,11,opt,name=overtime_earnings,json=overtimeEarnings,proto3" json:"overtime_earnings,omitempty"`
+	// ── Totals ───────────────────────────────────────────────────────────────
+	// Gross earnings from COMPLETED shifts only.
+	EarnedToDate *v1.Money `protobuf:"bytes,12,opt,name=earned_to_date,json=earnedToDate,proto3" json:"earned_to_date,omitempty"`
+	// Gross earnings projected from all COMPLETED + SCHEDULED shifts in the period.
+	ProjectedTotal *v1.Money `protobuf:"bytes,13,opt,name=projected_total,json=projectedTotal,proto3" json:"projected_total,omitempty"`
+	// ── Shift counts ─────────────────────────────────────────────────────────
+	CompletedShifts int32 `protobuf:"varint,14,opt,name=completed_shifts,json=completedShifts,proto3" json:"completed_shifts,omitempty"`
+	ScheduledShifts int32 `protobuf:"varint,15,opt,name=scheduled_shifts,json=scheduledShifts,proto3" json:"scheduled_shifts,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *PayPreview) Reset() {
+	*x = PayPreview{}
+	mi := &file_payroll_v1_payroll_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PayPreview) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PayPreview) ProtoMessage() {}
+
+func (x *PayPreview) ProtoReflect() protoreflect.Message {
+	mi := &file_payroll_v1_payroll_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PayPreview.ProtoReflect.Descriptor instead.
+func (*PayPreview) Descriptor() ([]byte, []int) {
+	return file_payroll_v1_payroll_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *PayPreview) GetEmployeeId() string {
+	if x != nil {
+		return x.EmployeeId
+	}
+	return ""
+}
+
+func (x *PayPreview) GetPeriodStart() string {
+	if x != nil {
+		return x.PeriodStart
+	}
+	return ""
+}
+
+func (x *PayPreview) GetPeriodEnd() string {
+	if x != nil {
+		return x.PeriodEnd
+	}
+	return ""
+}
+
+func (x *PayPreview) GetRegularDayHours() float64 {
+	if x != nil {
+		return x.RegularDayHours
+	}
+	return 0
+}
+
+func (x *PayPreview) GetRegularNightHours() float64 {
+	if x != nil {
+		return x.RegularNightHours
+	}
+	return 0
+}
+
+func (x *PayPreview) GetWeekendHours() float64 {
+	if x != nil {
+		return x.WeekendHours
+	}
+	return 0
+}
+
+func (x *PayPreview) GetOvertimeHours() float64 {
+	if x != nil {
+		return x.OvertimeHours
+	}
+	return 0
+}
+
+func (x *PayPreview) GetDayEarnings() *v1.Money {
+	if x != nil {
+		return x.DayEarnings
+	}
+	return nil
+}
+
+func (x *PayPreview) GetNightEarnings() *v1.Money {
+	if x != nil {
+		return x.NightEarnings
+	}
+	return nil
+}
+
+func (x *PayPreview) GetWeekendEarnings() *v1.Money {
+	if x != nil {
+		return x.WeekendEarnings
+	}
+	return nil
+}
+
+func (x *PayPreview) GetOvertimeEarnings() *v1.Money {
+	if x != nil {
+		return x.OvertimeEarnings
+	}
+	return nil
+}
+
+func (x *PayPreview) GetEarnedToDate() *v1.Money {
+	if x != nil {
+		return x.EarnedToDate
+	}
+	return nil
+}
+
+func (x *PayPreview) GetProjectedTotal() *v1.Money {
+	if x != nil {
+		return x.ProjectedTotal
+	}
+	return nil
+}
+
+func (x *PayPreview) GetCompletedShifts() int32 {
+	if x != nil {
+		return x.CompletedShifts
+	}
+	return 0
+}
+
+func (x *PayPreview) GetScheduledShifts() int32 {
+	if x != nil {
+		return x.ScheduledShifts
+	}
+	return 0
+}
+
 var File_payroll_v1_payroll_proto protoreflect.FileDescriptor
 
 const file_payroll_v1_payroll_proto_rawDesc = "" +
@@ -533,12 +1017,66 @@ const file_payroll_v1_payroll_proto_rawDesc = "" +
 	"\x13ListPayRunsResponse\x127\n" +
 	"\bpay_runs\x18\x01 \x03(\v2\x1c.workforce.payroll.v1.PayRunR\apayRuns\x12\x1f\n" +
 	"\vtotal_count\x18\x02 \x01(\x05R\n" +
-	"totalCount2\xb7\x02\n" +
+	"totalCount\"\xe7\x02\n" +
+	"\bPayRates\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1f\n" +
+	"\vemployee_id\x18\x02 \x01(\tR\n" +
+	"employeeId\x12#\n" +
+	"\rcurrency_code\x18\x03 \x01(\tR\fcurrencyCode\x12$\n" +
+	"\x0eday_rate_cents\x18\x04 \x01(\x03R\fdayRateCents\x12(\n" +
+	"\x10night_rate_cents\x18\x05 \x01(\x03R\x0enightRateCents\x12,\n" +
+	"\x12weekend_rate_cents\x18\x06 \x01(\x03R\x10weekendRateCents\x12.\n" +
+	"\x13overtime_rate_cents\x18\a \x01(\x03R\x11overtimeRateCents\x128\n" +
+	"\x18overtime_threshold_hours\x18\b \x01(\x01R\x16overtimeThresholdHours\x12\x1d\n" +
+	"\n" +
+	"updated_at\x18\t \x01(\tR\tupdatedAt\"5\n" +
+	"\x12GetPayRatesRequest\x12\x1f\n" +
+	"\vemployee_id\x18\x01 \x01(\tR\n" +
+	"employeeId\"\xe4\x02\n" +
+	"\x12SetPayRatesRequest\x12\x1f\n" +
+	"\vemployee_id\x18\x01 \x01(\tR\n" +
+	"employeeId\x12#\n" +
+	"\rcurrency_code\x18\x02 \x01(\tR\fcurrencyCode\x12$\n" +
+	"\x0eday_rate_cents\x18\x03 \x01(\x03R\fdayRateCents\x12(\n" +
+	"\x10night_rate_cents\x18\x04 \x01(\x03R\x0enightRateCents\x12,\n" +
+	"\x12weekend_rate_cents\x18\x05 \x01(\x03R\x10weekendRateCents\x12.\n" +
+	"\x13overtime_rate_cents\x18\x06 \x01(\x03R\x11overtimeRateCents\x12=\n" +
+	"\x18overtime_threshold_hours\x18\a \x01(\x01H\x00R\x16overtimeThresholdHours\x88\x01\x01B\x1b\n" +
+	"\x19_overtime_threshold_hours\"\x90\x01\n" +
+	"\x1aCalculatePayPreviewRequest\x12\x1f\n" +
+	"\vemployee_id\x18\x01 \x01(\tR\n" +
+	"employeeId\x12B\n" +
+	"\n" +
+	"date_range\x18\x02 \x01(\v2\x1e.workforce.common.v1.DateRangeH\x00R\tdateRange\x88\x01\x01B\r\n" +
+	"\v_date_range\"\x86\x06\n" +
+	"\n" +
+	"PayPreview\x12\x1f\n" +
+	"\vemployee_id\x18\x01 \x01(\tR\n" +
+	"employeeId\x12!\n" +
+	"\fperiod_start\x18\x02 \x01(\tR\vperiodStart\x12\x1d\n" +
+	"\n" +
+	"period_end\x18\x03 \x01(\tR\tperiodEnd\x12*\n" +
+	"\x11regular_day_hours\x18\x04 \x01(\x01R\x0fregularDayHours\x12.\n" +
+	"\x13regular_night_hours\x18\x05 \x01(\x01R\x11regularNightHours\x12#\n" +
+	"\rweekend_hours\x18\x06 \x01(\x01R\fweekendHours\x12%\n" +
+	"\x0eovertime_hours\x18\a \x01(\x01R\rovertimeHours\x12=\n" +
+	"\fday_earnings\x18\b \x01(\v2\x1a.workforce.common.v1.MoneyR\vdayEarnings\x12A\n" +
+	"\x0enight_earnings\x18\t \x01(\v2\x1a.workforce.common.v1.MoneyR\rnightEarnings\x12E\n" +
+	"\x10weekend_earnings\x18\n" +
+	" \x01(\v2\x1a.workforce.common.v1.MoneyR\x0fweekendEarnings\x12G\n" +
+	"\x11overtime_earnings\x18\v \x01(\v2\x1a.workforce.common.v1.MoneyR\x10overtimeEarnings\x12@\n" +
+	"\x0eearned_to_date\x18\f \x01(\v2\x1a.workforce.common.v1.MoneyR\fearnedToDate\x12C\n" +
+	"\x0fprojected_total\x18\r \x01(\v2\x1a.workforce.common.v1.MoneyR\x0eprojectedTotal\x12)\n" +
+	"\x10completed_shifts\x18\x0e \x01(\x05R\x0fcompletedShifts\x12)\n" +
+	"\x10scheduled_shifts\x18\x0f \x01(\x05R\x0fscheduledShifts2\xd4\x04\n" +
 	"\x0ePayrollService\x12_\n" +
 	"\n" +
 	"GetPayroll\x12'.workforce.payroll.v1.GetPayrollRequest\x1a(.workforce.payroll.v1.GetPayrollResponse\x12`\n" +
 	"\x0eGetPaySchedule\x12+.workforce.payroll.v1.GetPayScheduleRequest\x1a!.workforce.payroll.v1.PaySchedule\x12b\n" +
-	"\vListPayRuns\x12(.workforce.payroll.v1.ListPayRunsRequest\x1a).workforce.payroll.v1.ListPayRunsResponseB(Z&otto/internal/gen/payroll/v1;payrollv1b\x06proto3"
+	"\vListPayRuns\x12(.workforce.payroll.v1.ListPayRunsRequest\x1a).workforce.payroll.v1.ListPayRunsResponse\x12W\n" +
+	"\vGetPayRates\x12(.workforce.payroll.v1.GetPayRatesRequest\x1a\x1e.workforce.payroll.v1.PayRates\x12W\n" +
+	"\vSetPayRates\x12(.workforce.payroll.v1.SetPayRatesRequest\x1a\x1e.workforce.payroll.v1.PayRates\x12i\n" +
+	"\x13CalculatePayPreview\x120.workforce.payroll.v1.CalculatePayPreviewRequest\x1a .workforce.payroll.v1.PayPreviewB(Z&otto/internal/gen/payroll/v1;payrollv1b\x06proto3"
 
 var (
 	file_payroll_v1_payroll_proto_rawDescOnce sync.Once
@@ -552,37 +1090,55 @@ func file_payroll_v1_payroll_proto_rawDescGZIP() []byte {
 	return file_payroll_v1_payroll_proto_rawDescData
 }
 
-var file_payroll_v1_payroll_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_payroll_v1_payroll_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_payroll_v1_payroll_proto_goTypes = []any{
-	(*PayRun)(nil),                // 0: workforce.payroll.v1.PayRun
-	(*GetPayrollRequest)(nil),     // 1: workforce.payroll.v1.GetPayrollRequest
-	(*GetPayrollResponse)(nil),    // 2: workforce.payroll.v1.GetPayrollResponse
-	(*PaySchedule)(nil),           // 3: workforce.payroll.v1.PaySchedule
-	(*GetPayScheduleRequest)(nil), // 4: workforce.payroll.v1.GetPayScheduleRequest
-	(*ListPayRunsRequest)(nil),    // 5: workforce.payroll.v1.ListPayRunsRequest
-	(*ListPayRunsResponse)(nil),   // 6: workforce.payroll.v1.ListPayRunsResponse
-	(*v1.Money)(nil),              // 7: workforce.common.v1.Money
-	(v1.PayFrequency)(0),          // 8: workforce.common.v1.PayFrequency
-	(*v1.DateRange)(nil),          // 9: workforce.common.v1.DateRange
+	(*PayRun)(nil),                     // 0: workforce.payroll.v1.PayRun
+	(*GetPayrollRequest)(nil),          // 1: workforce.payroll.v1.GetPayrollRequest
+	(*GetPayrollResponse)(nil),         // 2: workforce.payroll.v1.GetPayrollResponse
+	(*PaySchedule)(nil),                // 3: workforce.payroll.v1.PaySchedule
+	(*GetPayScheduleRequest)(nil),      // 4: workforce.payroll.v1.GetPayScheduleRequest
+	(*ListPayRunsRequest)(nil),         // 5: workforce.payroll.v1.ListPayRunsRequest
+	(*ListPayRunsResponse)(nil),        // 6: workforce.payroll.v1.ListPayRunsResponse
+	(*PayRates)(nil),                   // 7: workforce.payroll.v1.PayRates
+	(*GetPayRatesRequest)(nil),         // 8: workforce.payroll.v1.GetPayRatesRequest
+	(*SetPayRatesRequest)(nil),         // 9: workforce.payroll.v1.SetPayRatesRequest
+	(*CalculatePayPreviewRequest)(nil), // 10: workforce.payroll.v1.CalculatePayPreviewRequest
+	(*PayPreview)(nil),                 // 11: workforce.payroll.v1.PayPreview
+	(*v1.Money)(nil),                   // 12: workforce.common.v1.Money
+	(v1.PayFrequency)(0),               // 13: workforce.common.v1.PayFrequency
+	(*v1.DateRange)(nil),               // 14: workforce.common.v1.DateRange
 }
 var file_payroll_v1_payroll_proto_depIdxs = []int32{
-	7, // 0: workforce.payroll.v1.PayRun.gross:type_name -> workforce.common.v1.Money
-	7, // 1: workforce.payroll.v1.PayRun.net:type_name -> workforce.common.v1.Money
-	0, // 2: workforce.payroll.v1.GetPayrollResponse.pay_runs:type_name -> workforce.payroll.v1.PayRun
-	8, // 3: workforce.payroll.v1.PaySchedule.frequency:type_name -> workforce.common.v1.PayFrequency
-	9, // 4: workforce.payroll.v1.ListPayRunsRequest.date_range:type_name -> workforce.common.v1.DateRange
-	0, // 5: workforce.payroll.v1.ListPayRunsResponse.pay_runs:type_name -> workforce.payroll.v1.PayRun
-	1, // 6: workforce.payroll.v1.PayrollService.GetPayroll:input_type -> workforce.payroll.v1.GetPayrollRequest
-	4, // 7: workforce.payroll.v1.PayrollService.GetPaySchedule:input_type -> workforce.payroll.v1.GetPayScheduleRequest
-	5, // 8: workforce.payroll.v1.PayrollService.ListPayRuns:input_type -> workforce.payroll.v1.ListPayRunsRequest
-	2, // 9: workforce.payroll.v1.PayrollService.GetPayroll:output_type -> workforce.payroll.v1.GetPayrollResponse
-	3, // 10: workforce.payroll.v1.PayrollService.GetPaySchedule:output_type -> workforce.payroll.v1.PaySchedule
-	6, // 11: workforce.payroll.v1.PayrollService.ListPayRuns:output_type -> workforce.payroll.v1.ListPayRunsResponse
-	9, // [9:12] is the sub-list for method output_type
-	6, // [6:9] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	12, // 0: workforce.payroll.v1.PayRun.gross:type_name -> workforce.common.v1.Money
+	12, // 1: workforce.payroll.v1.PayRun.net:type_name -> workforce.common.v1.Money
+	0,  // 2: workforce.payroll.v1.GetPayrollResponse.pay_runs:type_name -> workforce.payroll.v1.PayRun
+	13, // 3: workforce.payroll.v1.PaySchedule.frequency:type_name -> workforce.common.v1.PayFrequency
+	14, // 4: workforce.payroll.v1.ListPayRunsRequest.date_range:type_name -> workforce.common.v1.DateRange
+	0,  // 5: workforce.payroll.v1.ListPayRunsResponse.pay_runs:type_name -> workforce.payroll.v1.PayRun
+	14, // 6: workforce.payroll.v1.CalculatePayPreviewRequest.date_range:type_name -> workforce.common.v1.DateRange
+	12, // 7: workforce.payroll.v1.PayPreview.day_earnings:type_name -> workforce.common.v1.Money
+	12, // 8: workforce.payroll.v1.PayPreview.night_earnings:type_name -> workforce.common.v1.Money
+	12, // 9: workforce.payroll.v1.PayPreview.weekend_earnings:type_name -> workforce.common.v1.Money
+	12, // 10: workforce.payroll.v1.PayPreview.overtime_earnings:type_name -> workforce.common.v1.Money
+	12, // 11: workforce.payroll.v1.PayPreview.earned_to_date:type_name -> workforce.common.v1.Money
+	12, // 12: workforce.payroll.v1.PayPreview.projected_total:type_name -> workforce.common.v1.Money
+	1,  // 13: workforce.payroll.v1.PayrollService.GetPayroll:input_type -> workforce.payroll.v1.GetPayrollRequest
+	4,  // 14: workforce.payroll.v1.PayrollService.GetPaySchedule:input_type -> workforce.payroll.v1.GetPayScheduleRequest
+	5,  // 15: workforce.payroll.v1.PayrollService.ListPayRuns:input_type -> workforce.payroll.v1.ListPayRunsRequest
+	8,  // 16: workforce.payroll.v1.PayrollService.GetPayRates:input_type -> workforce.payroll.v1.GetPayRatesRequest
+	9,  // 17: workforce.payroll.v1.PayrollService.SetPayRates:input_type -> workforce.payroll.v1.SetPayRatesRequest
+	10, // 18: workforce.payroll.v1.PayrollService.CalculatePayPreview:input_type -> workforce.payroll.v1.CalculatePayPreviewRequest
+	2,  // 19: workforce.payroll.v1.PayrollService.GetPayroll:output_type -> workforce.payroll.v1.GetPayrollResponse
+	3,  // 20: workforce.payroll.v1.PayrollService.GetPaySchedule:output_type -> workforce.payroll.v1.PaySchedule
+	6,  // 21: workforce.payroll.v1.PayrollService.ListPayRuns:output_type -> workforce.payroll.v1.ListPayRunsResponse
+	7,  // 22: workforce.payroll.v1.PayrollService.GetPayRates:output_type -> workforce.payroll.v1.PayRates
+	7,  // 23: workforce.payroll.v1.PayrollService.SetPayRates:output_type -> workforce.payroll.v1.PayRates
+	11, // 24: workforce.payroll.v1.PayrollService.CalculatePayPreview:output_type -> workforce.payroll.v1.PayPreview
+	19, // [19:25] is the sub-list for method output_type
+	13, // [13:19] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_payroll_v1_payroll_proto_init() }
@@ -592,13 +1148,15 @@ func file_payroll_v1_payroll_proto_init() {
 	}
 	file_payroll_v1_payroll_proto_msgTypes[1].OneofWrappers = []any{}
 	file_payroll_v1_payroll_proto_msgTypes[5].OneofWrappers = []any{}
+	file_payroll_v1_payroll_proto_msgTypes[9].OneofWrappers = []any{}
+	file_payroll_v1_payroll_proto_msgTypes[10].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_payroll_v1_payroll_proto_rawDesc), len(file_payroll_v1_payroll_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

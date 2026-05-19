@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { GetPayrollRequest, GetPayrollResponse, GetPayScheduleRequest, ListPayRunsRequest, ListPayRunsResponse, PaySchedule } from "./payroll_pb.js";
+import { CalculatePayPreviewRequest, GetPayRatesRequest, GetPayrollRequest, GetPayrollResponse, GetPayScheduleRequest, ListPayRunsRequest, ListPayRunsResponse, PayPreview, PayRates, PaySchedule, SetPayRatesRequest } from "./payroll_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -46,6 +46,42 @@ export const PayrollService = {
       name: "ListPayRuns",
       I: ListPayRunsRequest,
       O: ListPayRunsResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * GetPayRates returns the configured hourly rate card for an employee
+     * (day, night, weekend, and overtime rates).
+     *
+     * @generated from rpc workforce.payroll.v1.PayrollService.GetPayRates
+     */
+    getPayRates: {
+      name: "GetPayRates",
+      I: GetPayRatesRequest,
+      O: PayRates,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * SetPayRates creates or replaces the hourly rate card for an employee.
+     *
+     * @generated from rpc workforce.payroll.v1.PayrollService.SetPayRates
+     */
+    setPayRates: {
+      name: "SetPayRates",
+      I: SetPayRatesRequest,
+      O: PayRates,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * CalculatePayPreview computes a real-time pay breakdown for an employee
+     * across a date range, applying day/night/weekend/overtime rates to each
+     * logged shift, and projects an end-of-period total from scheduled shifts.
+     *
+     * @generated from rpc workforce.payroll.v1.PayrollService.CalculatePayPreview
+     */
+    calculatePayPreview: {
+      name: "CalculatePayPreview",
+      I: CalculatePayPreviewRequest,
+      O: PayPreview,
       kind: MethodKind.Unary,
     },
   }

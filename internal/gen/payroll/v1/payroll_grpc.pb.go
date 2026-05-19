@@ -19,9 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	PayrollService_GetPayroll_FullMethodName     = "/workforce.payroll.v1.PayrollService/GetPayroll"
-	PayrollService_GetPaySchedule_FullMethodName = "/workforce.payroll.v1.PayrollService/GetPaySchedule"
-	PayrollService_ListPayRuns_FullMethodName    = "/workforce.payroll.v1.PayrollService/ListPayRuns"
+	PayrollService_GetPayroll_FullMethodName          = "/workforce.payroll.v1.PayrollService/GetPayroll"
+	PayrollService_GetPaySchedule_FullMethodName      = "/workforce.payroll.v1.PayrollService/GetPaySchedule"
+	PayrollService_ListPayRuns_FullMethodName         = "/workforce.payroll.v1.PayrollService/ListPayRuns"
+	PayrollService_GetPayRates_FullMethodName         = "/workforce.payroll.v1.PayrollService/GetPayRates"
+	PayrollService_SetPayRates_FullMethodName         = "/workforce.payroll.v1.PayrollService/SetPayRates"
+	PayrollService_CalculatePayPreview_FullMethodName = "/workforce.payroll.v1.PayrollService/CalculatePayPreview"
 )
 
 // PayrollServiceClient is the client API for PayrollService service.
@@ -37,6 +40,15 @@ type PayrollServiceClient interface {
 	// ListPayRuns returns a filterable, paginated list of pay-run records
 	// for an employee, optionally scoped by date range and/or status.
 	ListPayRuns(ctx context.Context, in *ListPayRunsRequest, opts ...grpc.CallOption) (*ListPayRunsResponse, error)
+	// GetPayRates returns the configured hourly rate card for an employee
+	// (day, night, weekend, and overtime rates).
+	GetPayRates(ctx context.Context, in *GetPayRatesRequest, opts ...grpc.CallOption) (*PayRates, error)
+	// SetPayRates creates or replaces the hourly rate card for an employee.
+	SetPayRates(ctx context.Context, in *SetPayRatesRequest, opts ...grpc.CallOption) (*PayRates, error)
+	// CalculatePayPreview computes a real-time pay breakdown for an employee
+	// across a date range, applying day/night/weekend/overtime rates to each
+	// logged shift, and projects an end-of-period total from scheduled shifts.
+	CalculatePayPreview(ctx context.Context, in *CalculatePayPreviewRequest, opts ...grpc.CallOption) (*PayPreview, error)
 }
 
 type payrollServiceClient struct {
@@ -77,6 +89,36 @@ func (c *payrollServiceClient) ListPayRuns(ctx context.Context, in *ListPayRunsR
 	return out, nil
 }
 
+func (c *payrollServiceClient) GetPayRates(ctx context.Context, in *GetPayRatesRequest, opts ...grpc.CallOption) (*PayRates, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PayRates)
+	err := c.cc.Invoke(ctx, PayrollService_GetPayRates_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *payrollServiceClient) SetPayRates(ctx context.Context, in *SetPayRatesRequest, opts ...grpc.CallOption) (*PayRates, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PayRates)
+	err := c.cc.Invoke(ctx, PayrollService_SetPayRates_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *payrollServiceClient) CalculatePayPreview(ctx context.Context, in *CalculatePayPreviewRequest, opts ...grpc.CallOption) (*PayPreview, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PayPreview)
+	err := c.cc.Invoke(ctx, PayrollService_CalculatePayPreview_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PayrollServiceServer is the server API for PayrollService service.
 // All implementations must embed UnimplementedPayrollServiceServer
 // for forward compatibility.
@@ -90,6 +132,15 @@ type PayrollServiceServer interface {
 	// ListPayRuns returns a filterable, paginated list of pay-run records
 	// for an employee, optionally scoped by date range and/or status.
 	ListPayRuns(context.Context, *ListPayRunsRequest) (*ListPayRunsResponse, error)
+	// GetPayRates returns the configured hourly rate card for an employee
+	// (day, night, weekend, and overtime rates).
+	GetPayRates(context.Context, *GetPayRatesRequest) (*PayRates, error)
+	// SetPayRates creates or replaces the hourly rate card for an employee.
+	SetPayRates(context.Context, *SetPayRatesRequest) (*PayRates, error)
+	// CalculatePayPreview computes a real-time pay breakdown for an employee
+	// across a date range, applying day/night/weekend/overtime rates to each
+	// logged shift, and projects an end-of-period total from scheduled shifts.
+	CalculatePayPreview(context.Context, *CalculatePayPreviewRequest) (*PayPreview, error)
 	mustEmbedUnimplementedPayrollServiceServer()
 }
 
@@ -108,6 +159,15 @@ func (UnimplementedPayrollServiceServer) GetPaySchedule(context.Context, *GetPay
 }
 func (UnimplementedPayrollServiceServer) ListPayRuns(context.Context, *ListPayRunsRequest) (*ListPayRunsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListPayRuns not implemented")
+}
+func (UnimplementedPayrollServiceServer) GetPayRates(context.Context, *GetPayRatesRequest) (*PayRates, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetPayRates not implemented")
+}
+func (UnimplementedPayrollServiceServer) SetPayRates(context.Context, *SetPayRatesRequest) (*PayRates, error) {
+	return nil, status.Error(codes.Unimplemented, "method SetPayRates not implemented")
+}
+func (UnimplementedPayrollServiceServer) CalculatePayPreview(context.Context, *CalculatePayPreviewRequest) (*PayPreview, error) {
+	return nil, status.Error(codes.Unimplemented, "method CalculatePayPreview not implemented")
 }
 func (UnimplementedPayrollServiceServer) mustEmbedUnimplementedPayrollServiceServer() {}
 func (UnimplementedPayrollServiceServer) testEmbeddedByValue()                        {}
@@ -184,6 +244,60 @@ func _PayrollService_ListPayRuns_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PayrollService_GetPayRates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPayRatesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PayrollServiceServer).GetPayRates(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PayrollService_GetPayRates_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PayrollServiceServer).GetPayRates(ctx, req.(*GetPayRatesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PayrollService_SetPayRates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetPayRatesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PayrollServiceServer).SetPayRates(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PayrollService_SetPayRates_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PayrollServiceServer).SetPayRates(ctx, req.(*SetPayRatesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PayrollService_CalculatePayPreview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CalculatePayPreviewRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PayrollServiceServer).CalculatePayPreview(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PayrollService_CalculatePayPreview_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PayrollServiceServer).CalculatePayPreview(ctx, req.(*CalculatePayPreviewRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PayrollService_ServiceDesc is the grpc.ServiceDesc for PayrollService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -202,6 +316,18 @@ var PayrollService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListPayRuns",
 			Handler:    _PayrollService_ListPayRuns_Handler,
+		},
+		{
+			MethodName: "GetPayRates",
+			Handler:    _PayrollService_GetPayRates_Handler,
+		},
+		{
+			MethodName: "SetPayRates",
+			Handler:    _PayrollService_SetPayRates_Handler,
+		},
+		{
+			MethodName: "CalculatePayPreview",
+			Handler:    _PayrollService_CalculatePayPreview_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

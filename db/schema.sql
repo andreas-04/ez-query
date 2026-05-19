@@ -110,3 +110,21 @@ CREATE TABLE IF NOT EXISTS job_locations (
     lat    DOUBLE PRECISION NOT NULL DEFAULT 0,
     lng    DOUBLE PRECISION NOT NULL DEFAULT 0
 );
+
+-- ---------------------------------------------------------------------------
+-- Pay Rates (predictive payroll engine)
+-- Stores hourly rates per employee used to calculate real-time pay previews.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS pay_rates (
+    id                       UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+    employee_id              UUID          UNIQUE NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+    currency_code            TEXT          NOT NULL DEFAULT 'USD',
+    -- Hourly rates in cents (e.g. 5000 = $50.00/hr)
+    day_rate_cents           BIGINT        NOT NULL DEFAULT 0,   -- weekday 06:00–18:00 UTC
+    night_rate_cents         BIGINT        NOT NULL DEFAULT 0,   -- weekday 18:00–06:00 UTC
+    weekend_rate_cents       BIGINT        NOT NULL DEFAULT 0,   -- Saturday & Sunday all day
+    overtime_rate_cents      BIGINT        NOT NULL DEFAULT 0,   -- weekday hours above threshold
+    -- Weekly hours threshold before overtime kicks in (default 40)
+    overtime_threshold_hours NUMERIC(5,2)  NOT NULL DEFAULT 40.00,
+    updated_at               TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+);

@@ -93,6 +93,64 @@ function serializePayRun(run: {
   };
 }
 
+function serializePayRates(r: {
+  id: string; employee_id: string; currency_code: string;
+  day_rate_cents: number; night_rate_cents: number;
+  weekend_rate_cents: number; overtime_rate_cents: number;
+  overtime_threshold_hours: number; updated_at: string;
+}): PlainObject {
+  const fmt = (cents: number) => `${r.currency_code} ${(cents / 100).toFixed(2)}/hr`;
+  return {
+    id: r.id,
+    employee_id: r.employee_id,
+    currency_code: r.currency_code,
+    day_rate:      { cents: r.day_rate_cents,      formatted: fmt(r.day_rate_cents) },
+    night_rate:    { cents: r.night_rate_cents,     formatted: fmt(r.night_rate_cents) },
+    weekend_rate:  { cents: r.weekend_rate_cents,   formatted: fmt(r.weekend_rate_cents) },
+    overtime_rate: { cents: r.overtime_rate_cents,  formatted: fmt(r.overtime_rate_cents) },
+    overtime_threshold_hours: r.overtime_threshold_hours,
+    updated_at: r.updated_at,
+  };
+}
+
+function serializePayPreview(p: {
+  employee_id: string; period_start: string; period_end: string;
+  regular_day_hours: number; regular_night_hours: number;
+  weekend_hours: number; overtime_hours: number;
+  day_earnings?: { amount: number; currency_code: string };
+  night_earnings?: { amount: number; currency_code: string };
+  weekend_earnings?: { amount: number; currency_code: string };
+  overtime_earnings?: { amount: number; currency_code: string };
+  earned_to_date?: { amount: number; currency_code: string };
+  projected_total?: { amount: number; currency_code: string };
+  completed_shifts: number; scheduled_shifts: number;
+}): PlainObject {
+  return {
+    employee_id: p.employee_id,
+    period_start: p.period_start,
+    period_end: p.period_end,
+    hours: {
+      regular_day:   p.regular_day_hours,
+      regular_night: p.regular_night_hours,
+      weekend:       p.weekend_hours,
+      overtime:      p.overtime_hours,
+      total:         Math.round((p.regular_day_hours + p.regular_night_hours + p.weekend_hours + p.overtime_hours) * 100) / 100,
+    },
+    earnings: {
+      day:      serializeMoney(p.day_earnings),
+      night:    serializeMoney(p.night_earnings),
+      weekend:  serializeMoney(p.weekend_earnings),
+      overtime: serializeMoney(p.overtime_earnings),
+    },
+    earned_to_date: serializeMoney(p.earned_to_date),
+    projected_total: serializeMoney(p.projected_total),
+    shifts: {
+      completed: p.completed_shifts,
+      scheduled: p.scheduled_shifts,
+    },
+  };
+}
+
 // ─── Dispatcher ───────────────────────────────────────────────────────────────
 
 export async function dispatchToolCall(
@@ -231,6 +289,39 @@ export async function dispatchToolCall(
           pay_runs: (res.pay_runs ?? []).map((r: any) => serializePayRun(r)),
           total_count: res.total_count,
         };
+      }
+
+      case "get_pay_rates": {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const r = await grpcCall<any>(payrollClient, "GetPayRates", {
+          employee_id: input.employee_id,
+        });
+        return serializePayRates(r);
+      }
+
+      case "set_pay_rates": {
+        const req: PlainObject = {
+          employee_id: input.employee_id,
+          currency_code: input.currency_code,
+          day_rate_cents: input.day_rate_cents,
+          night_rate_cents: input.night_rate_cents,
+          weekend_rate_cents: input.weekend_rate_cents,
+          overtime_rate_cents: input.overtime_rate_cents,
+        };
+        if (input.overtime_threshold_hours !== undefined) {
+          req.overtime_threshold_hours = input.overtime_threshold_hours;
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const r = await grpcCall<any>(payrollClient, "SetPayRates", req);
+        return serializePayRates(r);
+      }
+
+      case "calculate_pay_preview": {
+        const req: PlainObject = { employee_id: input.employee_id };
+        if (input.date_range) req.date_range = input.date_range;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const p = await grpcCall<any>(payrollClient, "CalculatePayPreview", req);
+        return serializePayPreview(p);
       }
 
       // ── SchedulingService ─────────────────────────────────────────────────
