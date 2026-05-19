@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package workforce.common.v1;
+
+option go_package = "otto/internal/gen/common/v1;commonv1";
+
+// ---------------------------------------------------------------------------
+// Enumerations
+// ---------------------------------------------------------------------------
+
+// WorkerType classifies how an employee primarily performs their work.
+enum WorkerType {
+  WORKER_TYPE_UNSPECIFIED = 0;
+  // Primarily works from a fixed office location.
+  OFFICE = 1;
+  // Travels to external sites to perform work.
+  FIELD = 2;
+  // Combination of office and field work.
+  MIXED = 3;
+}
+
+// JobStatus tracks the lifecycle of a field job.
+enum JobStatus {
+  JOB_STATUS_UNSPECIFIED = 0;
+  // Job has been booked but work has not yet started.
+  JOB_STATUS_SCHEDULED = 1;
+  // Work is actively underway.
+  JOB_STATUS_IN_PROGRESS = 2;
+  // All work has been finished and the job is closed.
+  JOB_STATUS_COMPLETE = 3;
+  // Job was called off before or during execution.
+  JOB_STATUS_CANCELLED = 4;
+}
+
+// ShiftStatus tracks the state of an office / non-field shift.
+enum ShiftStatus {
+  SHIFT_STATUS_UNSPECIFIED = 0;
+  // Shift is planned but has not yet occurred.
+  SHIFT_STATUS_SCHEDULED = 1;
+  // Employee worked the shift as planned.
+  SHIFT_STATUS_COMPLETED = 2;
+  // Employee did not attend and gave no prior notice.
+  SHIFT_STATUS_MISSED = 3;
+  // Shift was removed before it occurred.
+  SHIFT_STATUS_CANCELLED = 4;
+}
+
+// PayFrequency describes how often an employee receives pay.
+enum PayFrequency {
+  PAY_FREQUENCY_UNSPECIFIED = 0;
+  // Paid once every seven days.
+  PAY_FREQUENCY_WEEKLY = 1;
+  // Paid once every two weeks.
+  PAY_FREQUENCY_BIWEEKLY = 2;
+  // Paid once per calendar month.
+  PAY_FREQUENCY_MONTHLY = 3;
+}
+
+// ---------------------------------------------------------------------------
+// Shared messages
+// ---------------------------------------------------------------------------
+
+// DateRange represents an inclusive calendar interval expressed as ISO 8601
+// date strings (YYYY-MM-DD).
+message DateRange {
+  // First day of the range (inclusive), e.g. "2024-01-01".
+  string start_date = 1;
+  // Last day of the range (inclusive), e.g. "2024-03-31".
+  string end_date = 2;
+}
+
+// Address is a postal address suitable for both office and field locations.
+message Address {
+  // Primary street line, e.g. "123 Main St".
+  string line1 = 1;
+  // Optional secondary line, e.g. "Suite 400".
+  string line2 = 2;
+  string city = 3;
+  // State, province, or region code.
+  string state = 4;
+  // Postal / ZIP code.
+  string postcode = 5;
+  // ISO 3166-1 alpha-2 country code, e.g. "US".
+  string country = 6;
+}
+
+// Money represents a monetary amount stored as integer cents to avoid
+// floating-point precision issues.
+message Money {
+  // Amount in the smallest currency unit (cents for USD), e.g. 150000 = $1500.00.
+  int64 amount = 1;
+  // ISO 4217 currency code, e.g. "USD".
+  string currency_code = 2;
+}

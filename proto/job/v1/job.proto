@@ -1,0 +1,142 @@
+syntax = "proto3";
+
+package workforce.job.v1;
+
+import "common/v1/common.proto";
+
+option go_package = "otto/internal/gen/job/v1;jobv1";
+
+// ---------------------------------------------------------------------------
+// Service
+// ---------------------------------------------------------------------------
+
+service JobService {
+  // CreateJob registers a new field job with location, description, and
+  // the planned schedule window; employees are assigned separately.
+  rpc CreateJob(CreateJobRequest) returns (Job);
+
+  // GetJob retrieves a single job record by its UUID.
+  rpc GetJob(GetJobRequest) returns (Job);
+
+  // ListJobs returns a filterable list of jobs, supporting filters by
+  // assigned employee, date range, status, and city.
+  rpc ListJobs(ListJobsRequest) returns (ListJobsResponse);
+
+  // AssignEmployees appends one or more employees to a job's assignment list
+  // without replacing any existing assignments.
+  rpc AssignEmployees(AssignEmployeesRequest) returns (Job);
+
+  // UpdateJobStatus transitions a job to a new lifecycle state and
+  // optionally records the actual start and/or end timestamps.
+  rpc UpdateJobStatus(UpdateJobStatusRequest) returns (Job);
+
+  // GetJobLocation returns the address and GPS coordinates for a job,
+  // useful for routing and map display in field applications.
+  rpc GetJobLocation(GetJobLocationRequest) returns (JobLocation);
+}
+
+// ---------------------------------------------------------------------------
+// Messages
+// ---------------------------------------------------------------------------
+
+// Job is the core record describing a unit of field work.
+message Job {
+  // Unique identifier for this job.
+  string id = 1;
+  // Short descriptive title, e.g. "HVAC Inspection – Building B".
+  string title = 2;
+  // Detailed description of the work to be performed.
+  string description = 3;
+  // Current lifecycle state of the job.
+  workforce.common.v1.JobStatus status = 4;
+  // Physical location where the work takes place.
+  workforce.common.v1.Address location = 5;
+  // ISO 8601 timestamp when the job is planned to start.
+  string scheduled_start = 6;
+  // ISO 8601 timestamp when the job is planned to finish.
+  string scheduled_end = 7;
+  // ISO 8601 timestamp when work actually began; empty until started.
+  string actual_start = 8;
+  // ISO 8601 timestamp when work actually finished; empty until complete.
+  string actual_end = 9;
+  // UUIDs of every employee currently assigned to this job.
+  repeated string assigned_employee_ids = 10;
+  // ISO 8601 timestamp when this job record was created.
+  string created_at = 11;
+}
+
+// CreateJobRequest contains all information needed to register a new job.
+message CreateJobRequest {
+  string title = 1;
+  string description = 2;
+  // Address of the site where the work will be performed.
+  workforce.common.v1.Address location = 3;
+  // ISO 8601 timestamp for the planned start of work.
+  string scheduled_start = 4;
+  // ISO 8601 timestamp for the planned end of work.
+  string scheduled_end = 5;
+}
+
+// GetJobRequest identifies a job by its UUID.
+message GetJobRequest {
+  string id = 1;
+}
+
+// ListJobsRequest supports multi-criteria filtering of the job catalogue.
+message ListJobsRequest {
+  // When set, restricts results to jobs that include this employee UUID.
+  optional string employee_id = 1;
+  // When set, restricts results to jobs whose scheduled window overlaps.
+  optional workforce.common.v1.DateRange date_range = 2;
+  // When set, restricts results to jobs in this lifecycle state.
+  optional workforce.common.v1.JobStatus status = 3;
+  // When set, restricts results to jobs whose location city matches (exact).
+  optional string city = 4;
+}
+
+// ListJobsResponse carries the filtered job list with a total count.
+message ListJobsResponse {
+  repeated Job jobs = 1;
+  // Total number of jobs matching the filter (before any pagination).
+  int32 total_count = 2;
+}
+
+// AssignEmployeesRequest adds employees to an existing job.
+// This is additive — existing assignments are preserved.
+message AssignEmployeesRequest {
+  // UUID of the job to assign employees to.
+  string job_id = 1;
+  // UUIDs of the employees to add to the assignment list.
+  repeated string employee_ids = 2;
+}
+
+// UpdateJobStatusRequest transitions a job's status and optionally records
+// actual timing data as work progresses or completes.
+message UpdateJobStatusRequest {
+  // UUID of the job to update.
+  string job_id = 1;
+  // The new lifecycle state to transition the job to.
+  workforce.common.v1.JobStatus status = 2;
+  // ISO 8601 timestamp of when work actually started; set when moving to IN_PROGRESS.
+  optional string actual_start = 3;
+  // ISO 8601 timestamp of when work actually finished; set when moving to COMPLETE.
+  optional string actual_end = 4;
+}
+
+// Coordinates holds a WGS-84 geographic position.
+message Coordinates {
+  double lat = 1;
+  double lng = 2;
+}
+
+// JobLocation combines the postal address with GPS coordinates for a job site.
+message JobLocation {
+  string job_id = 1;
+  workforce.common.v1.Address address = 2;
+  Coordinates coordinates = 3;
+}
+
+// GetJobLocationRequest identifies a job whose site location is needed.
+message GetJobLocationRequest {
+  string job_id = 1;
+}

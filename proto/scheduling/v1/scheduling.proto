@@ -1,0 +1,137 @@
+syntax = "proto3";
+
+package workforce.scheduling.v1;
+
+import "common/v1/common.proto";
+
+option go_package = "otto/internal/gen/scheduling/v1;schedulingv1";
+
+// ---------------------------------------------------------------------------
+// Service
+// ---------------------------------------------------------------------------
+
+service SchedulingService {
+  // CreateShift books a new office or non-field shift for an employee.
+  rpc CreateShift(CreateShiftRequest) returns (Shift);
+
+  // GetShift retrieves a single shift record by its UUID.
+  rpc GetShift(GetShiftRequest) returns (Shift);
+
+  // ListShifts returns all shifts for an employee, with optional filtering
+  // by date range and/or shift status.
+  rpc ListShifts(ListShiftsRequest) returns (ListShiftsResponse);
+
+  // UpdateShift performs a partial update on a shift; only fields present
+  // in the request are modified, all others are left unchanged.
+  rpc UpdateShift(UpdateShiftRequest) returns (Shift);
+
+  // RequestTimeOff submits a leave request on behalf of an employee and
+  // returns an approval decision with an explanatory message.
+  rpc RequestTimeOff(TimeOffRequest) returns (TimeOffResponse);
+
+  // GetAvailability returns all scheduled shifts and recorded days off for
+  // an employee within the requested date range.
+  rpc GetAvailability(GetAvailabilityRequest) returns (GetAvailabilityResponse);
+}
+
+// ---------------------------------------------------------------------------
+// Messages
+// ---------------------------------------------------------------------------
+
+// Shift represents a single scheduled block of work for an office employee.
+message Shift {
+  // Unique identifier for this shift.
+  string id = 1;
+  // The employee this shift is assigned to.
+  string employee_id = 2;
+  // ISO 8601 timestamp when the shift starts.
+  string start_time = 3;
+  // ISO 8601 timestamp when the shift ends.
+  string end_time = 4;
+  // Current lifecycle state of the shift.
+  workforce.common.v1.ShiftStatus status = 5;
+  // Optional free-text notes attached to the shift.
+  string notes = 6;
+  // ISO 8601 timestamp when this shift record was created.
+  string created_at = 7;
+}
+
+// CreateShiftRequest contains all fields required to book a new shift.
+message CreateShiftRequest {
+  string employee_id = 1;
+  // ISO 8601 timestamp for the start of the shift.
+  string start_time = 2;
+  // ISO 8601 timestamp for the end of the shift.
+  string end_time = 3;
+  // Optional notes to attach to the new shift.
+  optional string notes = 4;
+}
+
+// GetShiftRequest identifies a shift by its UUID.
+message GetShiftRequest {
+  string id = 1;
+}
+
+// ListShiftsRequest supports filtering of an employee's shift history.
+message ListShiftsRequest {
+  string employee_id = 1;
+  // When set, restricts results to shifts that overlap this date range.
+  optional workforce.common.v1.DateRange date_range = 2;
+  // When set, restricts results to shifts in this status.
+  optional workforce.common.v1.ShiftStatus status = 3;
+}
+
+// ListShiftsResponse carries the filtered shift list with a total count.
+message ListShiftsResponse {
+  repeated Shift shifts = 1;
+  // Total number of shifts matching the filter (before any pagination).
+  int32 total_count = 2;
+}
+
+// UpdateShiftRequest performs a partial update; omitted optional fields are
+// not touched on the server.
+message UpdateShiftRequest {
+  // UUID of the shift to update.
+  string id = 1;
+  // New start time if the shift is being rescheduled.
+  optional string start_time = 2;
+  // New end time if the shift duration is changing.
+  optional string end_time = 3;
+  // New status to transition the shift to.
+  optional workforce.common.v1.ShiftStatus status = 4;
+  // Replacement notes; an empty string clears any existing notes.
+  optional string notes = 5;
+}
+
+// TimeOffRequest is submitted when an employee wants to request leave.
+message TimeOffRequest {
+  string employee_id = 1;
+  // ISO 8601 date for the first day of the requested leave.
+  string start_date = 2;
+  // ISO 8601 date for the last day of the requested leave.
+  string end_date = 3;
+  // Human-readable reason for the leave request.
+  string reason = 4;
+}
+
+// TimeOffResponse communicates the approval decision to the caller.
+message TimeOffResponse {
+  // True if the leave request was approved, false if denied.
+  bool approved = 1;
+  // Explanation of the decision, e.g. "Approved" or "Conflicts with existing shift".
+  string message = 2;
+}
+
+// GetAvailabilityRequest identifies an employee and the window to inspect.
+message GetAvailabilityRequest {
+  string employee_id = 1;
+  workforce.common.v1.DateRange date_range = 2;
+}
+
+// GetAvailabilityResponse summarises an employee's working calendar.
+message GetAvailabilityResponse {
+  // All shifts scheduled for this employee within the requested range.
+  repeated Shift shifts = 1;
+  // ISO 8601 dates (YYYY-MM-DD) on which the employee is on approved leave.
+  repeated string days_off = 2;
+}

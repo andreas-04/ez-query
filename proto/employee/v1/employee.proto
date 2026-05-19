@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package workforce.employee.v1;
+
+import "common/v1/common.proto";
+
+option go_package = "otto/internal/gen/employee/v1;employeev1";
+
+// ---------------------------------------------------------------------------
+// Service
+// ---------------------------------------------------------------------------
+
+service EmployeeService {
+  // GetEmployee fetches a single employee by UUID or by name (fuzzy ILIKE
+  // match). Returns NOT_FOUND if no matching record exists.
+  rpc GetEmployee(GetEmployeeRequest) returns (Employee);
+
+  // ListEmployees returns a paginated list of employees with optional
+  // filtering by department and/or worker type.
+  rpc ListEmployees(ListEmployeesRequest) returns (ListEmployeesResponse);
+}
+
+// ---------------------------------------------------------------------------
+// Messages
+// ---------------------------------------------------------------------------
+
+// Employee is the canonical identity record for a member of the workforce.
+// It is the source of truth for employee_id referenced by other services.
+message Employee {
+  // Globally unique identifier (UUID v4).
+  string id = 1;
+  // Full display name of the employee.
+  string name = 2;
+  // Work email address.
+  string email = 3;
+  // Organisational department, e.g. "Engineering".
+  string department = 4;
+  // Classifies how the employee primarily performs their work.
+  workforce.common.v1.WorkerType worker_type = 5;
+  // ISO 8601 timestamp when the employee record was created.
+  string created_at = 6;
+}
+
+// GetEmployeeRequest looks up a single employee.
+// Exactly one of id or name must be supplied.
+message GetEmployeeRequest {
+  oneof lookup {
+    // Exact match on the employee UUID.
+    string id = 1;
+    // Case-insensitive partial match on the employee's name (ILIKE "%name%").
+    string name = 2;
+  }
+}
+
+// ListEmployeesRequest supports optional server-side filtering.
+message ListEmployeesRequest {
+  // When set, restrict results to employees in this department.
+  optional string department = 1;
+  // When set, restrict results to employees of this worker type.
+  optional workforce.common.v1.WorkerType worker_type = 2;
+}
+
+// ListEmployeesResponse carries the filtered result set.
+message ListEmployeesResponse {
+  repeated Employee employees = 1;
+  // Total number of employees matching the filter (before any pagination).
+  int32 total_count = 2;
+}

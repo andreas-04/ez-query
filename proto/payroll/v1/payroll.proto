@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+package workforce.payroll.v1;
+
+import "common/v1/common.proto";
+
+option go_package = "otto/internal/gen/payroll/v1;payrollv1";
+
+// ---------------------------------------------------------------------------
+// Service
+// ---------------------------------------------------------------------------
+
+service PayrollService {
+  // GetPayroll retrieves one or more pay-run records for an employee,
+  // optionally scoped to a named period such as "latest" or "2024-Q1".
+  rpc GetPayroll(GetPayrollRequest) returns (GetPayrollResponse);
+
+  // GetPaySchedule returns the active pay schedule for an employee,
+  // including pay frequency and the next anticipated pay date.
+  rpc GetPaySchedule(GetPayScheduleRequest) returns (PaySchedule);
+
+  // ListPayRuns returns a filterable, paginated list of pay-run records
+  // for an employee, optionally scoped by date range and/or status.
+  rpc ListPayRuns(ListPayRunsRequest) returns (ListPayRunsResponse);
+}
+
+// ---------------------------------------------------------------------------
+// Messages
+// ---------------------------------------------------------------------------
+
+// PayRun represents a single pay disbursement for one employee.
+message PayRun {
+  // Unique identifier for this pay run.
+  string id = 1;
+  // The employee this pay run belongs to.
+  string employee_id = 2;
+  // ISO 8601 date marking the start of the pay period.
+  string period_start = 3;
+  // ISO 8601 date marking the end of the pay period.
+  string period_end = 4;
+  // Total earnings before deductions.
+  workforce.common.v1.Money gross = 5;
+  // Take-home amount after all deductions.
+  workforce.common.v1.Money net = 6;
+  // Current processing state, e.g. "pending", "processed", "paid".
+  string status = 7;
+  // ISO 8601 timestamp when the funds were disbursed; empty if not yet paid.
+  string paid_at = 8;
+}
+
+// GetPayrollRequest identifies an employee and an optional period qualifier.
+message GetPayrollRequest {
+  // UUID of the employee whose payroll is being requested.
+  string employee_id = 1;
+  // Human-readable period selector such as "latest", "2024-Q1", or a
+  // specific ISO 8601 date. Leave empty to return all runs.
+  optional string pay_period = 2;
+}
+
+// GetPayrollResponse returns all matching pay runs for the requested employee.
+message GetPayrollResponse {
+  // The employee these pay runs belong to.
+  string employee_id = 1;
+  repeated PayRun pay_runs = 2;
+}
+
+// PaySchedule describes when and how often an employee is paid.
+message PaySchedule {
+  // Unique identifier for this schedule record.
+  string id = 1;
+  // The employee this schedule applies to.
+  string employee_id = 2;
+  // How often the employee is paid.
+  workforce.common.v1.PayFrequency frequency = 3;
+  // ISO 8601 date from which this schedule takes effect.
+  string effective_date = 4;
+  // ISO 8601 date of the next upcoming pay disbursement.
+  string next_pay_date = 5;
+}
+
+// GetPayScheduleRequest identifies the employee whose schedule is needed.
+message GetPayScheduleRequest {
+  string employee_id = 1;
+}
+
+// ListPayRunsRequest supports rich filtering of pay-run history.
+message ListPayRunsRequest {
+  // UUID of the employee whose pay runs are being listed.
+  string employee_id = 1;
+  // When set, restricts results to pay runs whose period overlaps this range.
+  optional workforce.common.v1.DateRange date_range = 2;
+  // When set, restricts results to pay runs with this status string.
+  optional string status = 3;
+}
+
+// ListPayRunsResponse carries the filtered pay-run list with a total count.
+message ListPayRunsResponse {
+  repeated PayRun pay_runs = 1;
+  // Total number of pay runs matching the filter (before any pagination).
+  int32 total_count = 2;
+}
