@@ -1,3 +1,4 @@
+import "../env"; // must be first — loads .env before any other module initialises
 import express, { Request, Response } from "express";
 import { runAgentLoop } from "./loop";
 import type { TenantConfig } from "./prompt";
