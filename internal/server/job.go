@@ -34,13 +34,15 @@ func (s *JobServer) CreateJob(ctx context.Context, req *jobv1.CreateJobRequest) 
 		loc = &commonv1.Address{}
 	}
 
-	row := s.db.QueryRowContext(ctx, `
+	q := dbQ(ctx, s.db)
+	row := q.QueryRowContext(ctx, `
 		INSERT INTO jobs
-		    (title, description, status,
+		    (tenant_id, title, description, status,
 		     loc_line1, loc_line2, loc_city, loc_state, loc_postcode, loc_country,
 		     scheduled_start, scheduled_end)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::timestamptz, $11::timestamptz)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11::timestamptz, $12::timestamptz)
 		RETURNING id, created_at::text`,
+		TenantIDFromCtx(ctx),
 		req.Title, req.Description,
 		int32(commonv1.JobStatus_JOB_STATUS_SCHEDULED),
 		loc.Line1, loc.Line2, loc.City, loc.State, loc.Postcode, loc.Country,
@@ -92,7 +94,8 @@ func (s *JobServer) ListJobs(ctx context.Context, req *jobv1.ListJobsRequest) (*
 	}
 	query += " ORDER BY j.id"
 
-	idRows, err := s.db.QueryContext(ctx, query, args...)
+	q := dbQ(ctx, s.db)
+	idRows, err := q.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "query jobs: %v", err)
 	}
@@ -134,18 +137,20 @@ func (s *JobServer) AssignEmployees(ctx context.Context, req *jobv1.AssignEmploy
 		return s.fetchJob(ctx, req.JobId)
 	}
 
+	tenantID := TenantIDFromCtx(ctx)
 	placeholders := make([]string, len(req.EmployeeIds))
-	args := []any{req.JobId}
+	args := []any{tenantID, req.JobId}
 	for i, eid := range req.EmployeeIds {
 		args = append(args, eid)
-		placeholders[i] = fmt.Sprintf("($1, $%d)", i+2)
+		placeholders[i] = fmt.Sprintf("($1, $2, $%d)", i+3)
 	}
 	query := fmt.Sprintf(`
-		INSERT INTO job_employees (job_id, employee_id) VALUES %s
+		INSERT INTO job_employees (tenant_id, job_id, employee_id) VALUES %s
 		ON CONFLICT DO NOTHING`,
 		strings.Join(placeholders, ", "),
 	)
-	if _, err := s.db.ExecContext(ctx, query, args...); err != nil {
+	q := dbQ(ctx, s.db)
+	if _, err := q.ExecContext(ctx, query, args...); err != nil {
 		return nil, status.Errorf(codes.Internal, "assign employees: %v", err)
 	}
 	return s.fetchJob(ctx, req.JobId)
@@ -175,7 +180,8 @@ func (s *JobServer) UpdateJobStatus(ctx context.Context, req *jobv1.UpdateJobSta
 		strings.Join(setClauses, ", "), len(args),
 	)
 
-	res, err := s.db.ExecContext(ctx, query, args...)
+	q := dbQ(ctx, s.db)
+	res, err := q.ExecContext(ctx, query, args...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "update job status: %v", err)
 	}
@@ -191,7 +197,8 @@ func (s *JobServer) GetJobLocation(ctx context.Context, req *jobv1.GetJobLocatio
 		return nil, status.Error(codes.InvalidArgument, "job_id is required")
 	}
 
-	row := s.db.QueryRowContext(ctx, `
+	q := dbQ(ctx, s.db)
+	row := q.QueryRowContext(ctx, `
 		SELECT j.id,
 		       j.loc_line1, j.loc_line2, j.loc_city, j.loc_state, j.loc_postcode, j.loc_country,
 		       COALESCE(jl.lat, 0), COALESCE(jl.lng, 0)
@@ -226,7 +233,8 @@ func (s *JobServer) GetJobLocation(ctx context.Context, req *jobv1.GetJobLocatio
 
 // fetchJob loads a full Job record including its assigned employee IDs.
 func (s *JobServer) fetchJob(ctx context.Context, id string) (*jobv1.Job, error) {
-	row := s.db.QueryRowContext(ctx, `
+	q := dbQ(ctx, s.db)
+	row := q.QueryRowContext(ctx, `
 		SELECT id, title, description, status,
 		       loc_line1, loc_line2, loc_city, loc_state, loc_postcode, loc_country,
 		       scheduled_start::text, scheduled_end::text,
@@ -254,7 +262,7 @@ func (s *JobServer) fetchJob(ctx context.Context, id string) (*jobv1.Job, error)
 	j.Location = &addr
 
 	// Load assigned employee IDs.
-	eidRows, err := s.db.QueryContext(ctx,
+	eidRows, err := q.QueryContext(ctx,
 		"SELECT employee_id FROM job_employees WHERE job_id = $1 ORDER BY employee_id", id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "query job_employees: %v", err)

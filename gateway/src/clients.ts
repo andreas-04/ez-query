@@ -43,3 +43,23 @@ export function grpcCall<T = Record<string, unknown>>(
     });
   });
 }
+
+/** Promisify a unary gRPC call with additional metadata (e.g. x-tenant-id). */
+export function grpcCallWithMeta<T = Record<string, unknown>>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  client: any,
+  method: string,
+  request: object,
+  meta: Record<string, string>
+): Promise<T> {
+  const metadata = new grpc.Metadata();
+  for (const [k, v] of Object.entries(meta)) {
+    metadata.add(k, v);
+  }
+  return new Promise((resolve, reject) => {
+    client[method](request, metadata, (err: Error | null, response: T) => {
+      if (err) reject(err);
+      else resolve(response);
+    });
+  });
+}

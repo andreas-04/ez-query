@@ -1,4 +1,4 @@
-import { employeeClient, jobClient, payrollClient, schedulingClient, grpcCall } from "../clients";
+import { employeeClient, jobClient, payrollClient, schedulingClient, grpcCallWithMeta } from "../clients";
 import {
   WORKER_TYPE,
   JOB_STATUS,
@@ -155,8 +155,12 @@ function serializePayPreview(p: {
 
 export async function dispatchToolCall(
   name: string,
-  input: PlainObject
+  input: PlainObject,
+  tenantId: string
 ): Promise<PlainObject> {
+  const meta = { "x-tenant-id": tenantId };
+  const call = <T>(client: unknown, method: string, req: object) =>
+    grpcCallWithMeta<T>(client, method, req, meta);
   try {
     switch (name) {
       // ── EmployeeService ───────────────────────────────────────────────────
@@ -167,7 +171,7 @@ export async function dispatchToolCall(
           ? { id: input.employee_id }
           : { name: input.employee_name };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const emp = await grpcCall<any>(employeeClient, "GetEmployee", req);
+        const emp = await call<any>(employeeClient, "GetEmployee", req);
         return serializeEmployee(emp);
       }
 
@@ -176,7 +180,7 @@ export async function dispatchToolCall(
         if (input.department) req.department = input.department;
         if (input.worker_type) req.worker_type = WORKER_TYPE[input.worker_type as string];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const res = await grpcCall<any>(employeeClient, "ListEmployees", req);
+        const res = await call<any>(employeeClient, "ListEmployees", req);
         return {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           employees: (res.employees ?? []).map((e: any) => serializeEmployee(e)),
@@ -188,7 +192,7 @@ export async function dispatchToolCall(
 
       case "create_job": {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const job = await grpcCall<any>(jobClient, "CreateJob", {
+        const job = await call<any>(jobClient, "CreateJob", {
           title: input.title,
           description: input.description,
           location: input.location,           // snake_case keys already match proto
@@ -200,7 +204,7 @@ export async function dispatchToolCall(
 
       case "get_job": {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const job = await grpcCall<any>(jobClient, "GetJob", { id: input.job_id });
+        const job = await call<any>(jobClient, "GetJob", { id: input.job_id });
         return serializeJob(job);
       }
 
@@ -211,7 +215,7 @@ export async function dispatchToolCall(
         if (input.city) req.city = input.city;
         if (input.date_range) req.date_range = input.date_range;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const res = await grpcCall<any>(jobClient, "ListJobs", req);
+        const res = await call<any>(jobClient, "ListJobs", req);
         return {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           jobs: (res.jobs ?? []).map((j: any) => serializeJob(j)),
@@ -221,7 +225,7 @@ export async function dispatchToolCall(
 
       case "assign_employees_to_job": {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const job = await grpcCall<any>(jobClient, "AssignEmployees", {
+        const job = await call<any>(jobClient, "AssignEmployees", {
           job_id: input.job_id,
           employee_ids: input.employee_ids,
         });
@@ -236,13 +240,13 @@ export async function dispatchToolCall(
         if (input.actual_start) req.actual_start = input.actual_start;
         if (input.actual_end) req.actual_end = input.actual_end;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const job = await grpcCall<any>(jobClient, "UpdateJobStatus", req);
+        const job = await call<any>(jobClient, "UpdateJobStatus", req);
         return serializeJob(job);
       }
 
       case "get_job_location": {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const loc = await grpcCall<any>(jobClient, "GetJobLocation", { job_id: input.job_id });
+        const loc = await call<any>(jobClient, "GetJobLocation", { job_id: input.job_id });
         return {
           job_id: loc.job_id,
           address: loc.address,
@@ -256,7 +260,7 @@ export async function dispatchToolCall(
         const req: PlainObject = { employee_id: input.employee_id };
         if (input.pay_period) req.pay_period = input.pay_period;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const res = await grpcCall<any>(payrollClient, "GetPayroll", req);
+        const res = await call<any>(payrollClient, "GetPayroll", req);
         return {
           employee_id: res.employee_id,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -266,7 +270,7 @@ export async function dispatchToolCall(
 
       case "get_pay_schedule": {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const s = await grpcCall<any>(payrollClient, "GetPaySchedule", {
+        const s = await call<any>(payrollClient, "GetPaySchedule", {
           employee_id: input.employee_id,
         });
         return {
@@ -283,7 +287,7 @@ export async function dispatchToolCall(
         if (input.status) req.status = input.status;
         if (input.date_range) req.date_range = input.date_range;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const res = await grpcCall<any>(payrollClient, "ListPayRuns", req);
+        const res = await call<any>(payrollClient, "ListPayRuns", req);
         return {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           pay_runs: (res.pay_runs ?? []).map((r: any) => serializePayRun(r)),
@@ -293,7 +297,7 @@ export async function dispatchToolCall(
 
       case "get_pay_rates": {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const r = await grpcCall<any>(payrollClient, "GetPayRates", {
+        const r = await call<any>(payrollClient, "GetPayRates", {
           employee_id: input.employee_id,
         });
         return serializePayRates(r);
@@ -312,7 +316,7 @@ export async function dispatchToolCall(
           req.overtime_threshold_hours = input.overtime_threshold_hours;
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const r = await grpcCall<any>(payrollClient, "SetPayRates", req);
+        const r = await call<any>(payrollClient, "SetPayRates", req);
         return serializePayRates(r);
       }
 
@@ -320,7 +324,7 @@ export async function dispatchToolCall(
         const req: PlainObject = { employee_id: input.employee_id };
         if (input.date_range) req.date_range = input.date_range;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const p = await grpcCall<any>(payrollClient, "CalculatePayPreview", req);
+        const p = await call<any>(payrollClient, "CalculatePayPreview", req);
         return serializePayPreview(p);
       }
 
@@ -334,13 +338,13 @@ export async function dispatchToolCall(
         };
         if (input.notes) req.notes = input.notes;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const shift = await grpcCall<any>(schedulingClient, "CreateShift", req);
+        const shift = await call<any>(schedulingClient, "CreateShift", req);
         return serializeShift(shift);
       }
 
       case "get_shift": {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const shift = await grpcCall<any>(schedulingClient, "GetShift", { id: input.shift_id });
+        const shift = await call<any>(schedulingClient, "GetShift", { id: input.shift_id });
         return serializeShift(shift);
       }
 
@@ -349,7 +353,7 @@ export async function dispatchToolCall(
         if (input.status) req.status = SHIFT_STATUS[input.status as string];
         if (input.date_range) req.date_range = input.date_range;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const res = await grpcCall<any>(schedulingClient, "ListShifts", req);
+        const res = await call<any>(schedulingClient, "ListShifts", req);
         return {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           shifts: (res.shifts ?? []).map((s: any) => serializeShift(s)),
@@ -364,13 +368,13 @@ export async function dispatchToolCall(
         if (input.status) req.status = SHIFT_STATUS[input.status as string];
         if (input.notes !== undefined) req.notes = input.notes;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const shift = await grpcCall<any>(schedulingClient, "UpdateShift", req);
+        const shift = await call<any>(schedulingClient, "UpdateShift", req);
         return serializeShift(shift);
       }
 
       case "request_time_off": {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const res = await grpcCall<any>(schedulingClient, "RequestTimeOff", {
+        const res = await call<any>(schedulingClient, "RequestTimeOff", {
           employee_id: input.employee_id,
           start_date: input.start_date,
           end_date: input.end_date,
@@ -381,7 +385,7 @@ export async function dispatchToolCall(
 
       case "get_availability": {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const res = await grpcCall<any>(schedulingClient, "GetAvailability", {
+        const res = await call<any>(schedulingClient, "GetAvailability", {
           employee_id: input.employee_id,
           date_range: input.date_range,
         });

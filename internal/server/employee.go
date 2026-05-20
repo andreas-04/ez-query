@@ -31,12 +31,13 @@ func (s *EmployeeServer) GetEmployee(ctx context.Context, req *employeev1.GetEmp
 		WHERE %s
 		LIMIT 1`
 
+	q := dbQ(ctx, s.db)
 	var row *sql.Row
 	switch l := req.Lookup.(type) {
 	case *employeev1.GetEmployeeRequest_Id:
-		row = s.db.QueryRowContext(ctx, fmt.Sprintf(base, "id = $1"), l.Id)
+		row = q.QueryRowContext(ctx, fmt.Sprintf(base, "id = $1"), l.Id)
 	case *employeev1.GetEmployeeRequest_Name:
-		row = s.db.QueryRowContext(ctx, fmt.Sprintf(base, "name ILIKE $1"), "%"+l.Name+"%")
+		row = q.QueryRowContext(ctx, fmt.Sprintf(base, "name ILIKE $1"), "%"+l.Name+"%")
 	default:
 		return nil, status.Error(codes.InvalidArgument, "one of id or name must be provided")
 	}
@@ -62,7 +63,8 @@ func (s *EmployeeServer) ListEmployees(ctx context.Context, req *employeev1.List
 	}
 	query += " ORDER BY name"
 
-	rows, err := s.db.QueryContext(ctx, query, args...)
+	q := dbQ(ctx, s.db)
+	rows, err := q.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "query employees: %v", err)
 	}

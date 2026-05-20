@@ -14,6 +14,7 @@ type ToolUseBlock = Anthropic.Messages.ToolUseBlock;
 export async function runAgentLoop(
   userMessage: string,
   history: Message[],
+  tenantId: string,
   tenant?: TenantConfig
 ): Promise<{ reply: string; toolCallNames: string[] }> {
   // Append the new user message to the shared history array so subsequent
@@ -59,7 +60,8 @@ export async function runAgentLoop(
           content: JSON.stringify(
             await dispatchToolCall(
               block.name,
-              block.input as Record<string, unknown>
+              block.input as Record<string, unknown>,
+              tenantId
             )
           ),
         }))

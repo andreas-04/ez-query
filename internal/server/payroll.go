@@ -77,7 +77,8 @@ func (s *PayrollServer) GetPayroll(ctx context.Context, req *payrollv1.GetPayrol
 		query += " ORDER BY period_start"
 	}
 
-	rows, err := s.db.QueryContext(ctx, query, args...)
+	q := dbQ(ctx, s.db)
+	rows, err := q.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "query pay_runs: %v", err)
 	}
@@ -107,7 +108,8 @@ func (s *PayrollServer) GetPaySchedule(ctx context.Context, req *payrollv1.GetPa
 		return nil, status.Error(codes.InvalidArgument, "employee_id is required")
 	}
 
-	row := s.db.QueryRowContext(ctx, `
+	q := dbQ(ctx, s.db)
+	row := q.QueryRowContext(ctx, `
 		SELECT id, employee_id, frequency,
 		       effective_date::text, next_pay_date::text
 		FROM pay_schedules
@@ -157,7 +159,8 @@ func (s *PayrollServer) ListPayRuns(ctx context.Context, req *payrollv1.ListPayR
 	}
 	query += " ORDER BY period_start"
 
-	rows, err := s.db.QueryContext(ctx, query, args...)
+	q2 := dbQ(ctx, s.db)
+	rows, err := q2.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "query pay_runs: %v", err)
 	}
@@ -213,7 +216,8 @@ func (s *PayrollServer) GetPayRates(ctx context.Context, req *payrollv1.GetPayRa
 	if req.EmployeeId == "" {
 		return nil, status.Error(codes.InvalidArgument, "employee_id is required")
 	}
-	row := s.db.QueryRowContext(ctx, `
+	q := dbQ(ctx, s.db)
+	row := q.QueryRowContext(ctx, `
 		SELECT id, employee_id, currency_code,
 		       day_rate_cents, night_rate_cents, weekend_rate_cents, overtime_rate_cents,
 		       overtime_threshold_hours, updated_at::text
@@ -249,12 +253,13 @@ func (s *PayrollServer) SetPayRates(ctx context.Context, req *payrollv1.SetPayRa
 		threshold = *req.OvertimeThresholdHours
 	}
 
-	row := s.db.QueryRowContext(ctx, `
-		INSERT INTO pay_rates (employee_id, currency_code,
+	q := dbQ(ctx, s.db)
+	row := q.QueryRowContext(ctx, `
+		INSERT INTO pay_rates (tenant_id, employee_id, currency_code,
 		  day_rate_cents, night_rate_cents, weekend_rate_cents, overtime_rate_cents,
 		  overtime_threshold_hours, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
-		ON CONFLICT (employee_id) DO UPDATE SET
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+		ON CONFLICT (tenant_id, employee_id) DO UPDATE SET
 		  currency_code            = EXCLUDED.currency_code,
 		  day_rate_cents           = EXCLUDED.day_rate_cents,
 		  night_rate_cents         = EXCLUDED.night_rate_cents,
@@ -265,7 +270,7 @@ func (s *PayrollServer) SetPayRates(ctx context.Context, req *payrollv1.SetPayRa
 		RETURNING id, employee_id, currency_code,
 		          day_rate_cents, night_rate_cents, weekend_rate_cents, overtime_rate_cents,
 		          overtime_threshold_hours, updated_at::text`,
-		req.EmployeeId, req.CurrencyCode,
+		TenantIDFromCtx(ctx), req.EmployeeId, req.CurrencyCode,
 		req.DayRateCents, req.NightRateCents, req.WeekendRateCents, req.OvertimeRateCents,
 		threshold,
 	)
@@ -312,7 +317,8 @@ func (s *PayrollServer) CalculatePayPreview(ctx context.Context, req *payrollv1.
 	}
 
 	// Fetch the employee's pay rates.
-	rateRow := s.db.QueryRowContext(ctx, `
+	q := dbQ(ctx, s.db)
+	rateRow := q.QueryRowContext(ctx, `
 		SELECT id, employee_id, currency_code,
 		       day_rate_cents, night_rate_cents, weekend_rate_cents, overtime_rate_cents,
 		       overtime_threshold_hours, updated_at::text
@@ -328,7 +334,7 @@ func (s *PayrollServer) CalculatePayPreview(ctx context.Context, req *payrollv1.
 	}
 
 	// Fetch all SCHEDULED (1) and COMPLETED (2) shifts in the period.
-	rows, err := s.db.QueryContext(ctx, `
+	shiftDbRows, err := q.QueryContext(ctx, `
 		SELECT start_time, end_time, status
 		FROM shifts
 		WHERE employee_id = $1
@@ -343,13 +349,13 @@ func (s *PayrollServer) CalculatePayPreview(ctx context.Context, req *payrollv1.
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "query shifts: %v", err)
 	}
-	defer rows.Close()
+	defer shiftDbRows.Close()
 
 	var shifts []shiftRow
-	for rows.Next() {
+	for shiftDbRows.Next() {
 		var startT, endT time.Time
 		var shiftStatus int
-		if err := rows.Scan(&startT, &endT, &shiftStatus); err != nil {
+		if err := shiftDbRows.Scan(&startT, &endT, &shiftStatus); err != nil {
 			return nil, status.Errorf(codes.Internal, "scan shift: %v", err)
 		}
 		// Clamp to period boundaries.
@@ -365,7 +371,7 @@ func (s *PayrollServer) CalculatePayPreview(ctx context.Context, req *payrollv1.
 			completed: shiftStatus == 2,
 		})
 	}
-	if err := rows.Err(); err != nil {
+	if err := shiftDbRows.Err(); err != nil {
 		return nil, status.Errorf(codes.Internal, "rows error: %v", err)
 	}
 

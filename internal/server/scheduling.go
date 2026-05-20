@@ -34,13 +34,14 @@ func (s *SchedulingServer) CreateShift(ctx context.Context, req *schedulingv1.Cr
 		notes = *req.Notes
 	}
 
-	row := s.db.QueryRowContext(ctx, `
-		INSERT INTO shifts (employee_id, start_time, end_time, status, notes)
-		VALUES ($1, $2::timestamptz, $3::timestamptz, $4, $5)
+	q := dbQ(ctx, s.db)
+	row := q.QueryRowContext(ctx, `
+		INSERT INTO shifts (tenant_id, employee_id, start_time, end_time, status, notes)
+		VALUES ($1, $2, $3::timestamptz, $4::timestamptz, $5, $6)
 		RETURNING id, employee_id,
 		          start_time::text, end_time::text,
 		          status, notes, created_at::text`,
-		req.EmployeeId, req.StartTime, req.EndTime,
+		TenantIDFromCtx(ctx), req.EmployeeId, req.StartTime, req.EndTime,
 		int32(commonv1.ShiftStatus_SHIFT_STATUS_SCHEDULED), notes,
 	)
 	return scanShiftRow(row)
@@ -51,7 +52,8 @@ func (s *SchedulingServer) GetShift(ctx context.Context, req *schedulingv1.GetSh
 	if req.Id == "" {
 		return nil, status.Error(codes.InvalidArgument, "id is required")
 	}
-	row := s.db.QueryRowContext(ctx, `
+	q := dbQ(ctx, s.db)
+	row := q.QueryRowContext(ctx, `
 		SELECT id, employee_id,
 		       start_time::text, end_time::text,
 		       status, notes, created_at::text
@@ -85,7 +87,8 @@ func (s *SchedulingServer) ListShifts(ctx context.Context, req *schedulingv1.Lis
 	}
 	query += " ORDER BY start_time"
 
-	rows, err := s.db.QueryContext(ctx, query, args...)
+	q := dbQ(ctx, s.db)
+	rows, err := q.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "query shifts: %v", err)
 	}
@@ -137,6 +140,7 @@ func (s *SchedulingServer) UpdateShift(ctx context.Context, req *schedulingv1.Up
 		return nil, status.Error(codes.InvalidArgument, "at least one field must be updated")
 	}
 
+	q := dbQ(ctx, s.db)
 	args = append(args, req.Id)
 	query := fmt.Sprintf(`
 		UPDATE shifts SET %s WHERE id = $%d
@@ -146,7 +150,7 @@ func (s *SchedulingServer) UpdateShift(ctx context.Context, req *schedulingv1.Up
 		strings.Join(setClauses, ", "), len(args),
 	)
 
-	row := s.db.QueryRowContext(ctx, query, args...)
+	row := q.QueryRowContext(ctx, query, args...)
 	return scanShiftRow(row)
 }
 
@@ -156,10 +160,11 @@ func (s *SchedulingServer) RequestTimeOff(ctx context.Context, req *schedulingv1
 		return nil, status.Error(codes.InvalidArgument, "employee_id, start_date and end_date are required")
 	}
 
-	_, err := s.db.ExecContext(ctx, `
-		INSERT INTO time_off_requests (employee_id, start_date, end_date, reason, approved)
-		VALUES ($1, $2::date, $3::date, $4, TRUE)`,
-		req.EmployeeId, req.StartDate, req.EndDate, req.Reason,
+	q := dbQ(ctx, s.db)
+	_, err := q.ExecContext(ctx, `
+		INSERT INTO time_off_requests (tenant_id, employee_id, start_date, end_date, reason, approved)
+		VALUES ($1, $2, $3::date, $4::date, $5, TRUE)`,
+		TenantIDFromCtx(ctx), req.EmployeeId, req.StartDate, req.EndDate, req.Reason,
 	)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "insert time_off_request: %v", err)
@@ -180,7 +185,8 @@ func (s *SchedulingServer) GetAvailability(ctx context.Context, req *schedulingv
 	}
 
 	// Shifts overlapping the range.
-	shiftRows, err := s.db.QueryContext(ctx, `
+	q := dbQ(ctx, s.db)
+	shiftRows, err := q.QueryContext(ctx, `
 		SELECT id, employee_id,
 		       start_time::text, end_time::text,
 		       status, notes, created_at::text
@@ -211,7 +217,7 @@ func (s *SchedulingServer) GetAvailability(ctx context.Context, req *schedulingv
 	}
 
 	// Approved days-off within the range (expanded to individual dates by Postgres).
-	dayRows, err := s.db.QueryContext(ctx, `
+	dayRows, err := q.QueryContext(ctx, `
 		SELECT DISTINCT gs::date::text
 		FROM time_off_requests,
 		     generate_series(start_date, end_date, '1 day'::interval) gs

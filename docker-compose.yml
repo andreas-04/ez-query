@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: otto
+      POSTGRES_USER: otto
+      POSTGRES_PASSWORD: otto
+    volumes:
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U otto -d otto"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  grpc-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    environment:
+      DATABASE_URL: postgres://otto:otto@postgres/otto?sslmode=disable
+      GRPC_ADDR: ":50051"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    environment:
+      GRPC_BASE_URL: grpc-server:50051
+      PORT: "3000"
+      SKIP_AUTH: "true"
+      DEV_TENANT_ID: "00000000-0000-0000-0000-000000000001"
+      ALLOWED_ORIGINS: "http://localhost:4001"
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+    ports:
+      - "4000:3000"
+    depends_on:
+      - grpc-server
+
+  web:
+    build:
+      context: web
+      dockerfile: Dockerfile
+    environment:
+      GATEWAY_URL: http://gateway:3000
+      SKIP_AUTH: "true"
+    ports:
+      - "4001:3000"
+    depends_on:
+      - gateway
+
+volumes:
+  postgres_data:

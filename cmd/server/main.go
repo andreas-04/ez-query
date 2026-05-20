@@ -49,7 +49,9 @@ func main() {
 	// -----------------------------------------------------------------------
 	// gRPC server
 	// -----------------------------------------------------------------------
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(server.TenantInterceptor(db)),
+	)
 
 	employeev1.RegisterEmployeeServiceServer(grpcServer, server.NewEmployeeServer(db))
 	payrollv1.RegisterPayrollServiceServer(grpcServer, server.NewPayrollServer(db))
