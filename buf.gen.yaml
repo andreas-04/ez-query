@@ -2,15 +2,6 @@ version: v2
 inputs:
   - directory: proto
 plugins:
-  - remote: buf.build/bufbuild/es
-    out: client/pkg
-    opt:
-      - target=ts
-  - remote: buf.build/connectrpc/es
-    out: client/pkg
-    opt:
-      - target=ts
-
   - remote: buf.build/protocolbuffers/go
     out: internal/gen
     opt: paths=source_relative

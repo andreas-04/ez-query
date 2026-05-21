@@ -1,28 +1,11 @@
 import "../env"; // must be first — loads .env before any other module initialises
 import express, { Request, Response } from "express";
-import cors from "cors";
 import { runAgentLoop } from "./loop";
 import type { TenantConfig } from "./prompt";
 import type Anthropic from "@anthropic-ai/sdk";
 import { authMiddleware } from "../middleware/auth";
 
 const app = express();
-
-const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? "http://localhost:3001")
-  .split(",")
-  .map((o) => o.trim());
-
-app.use(
-  cors({
-    origin: (origin, cb) => {
-      // Allow requests with no origin (e.g. server-to-server, curl)
-      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-      cb(new Error(`CORS: origin ${origin} not allowed`));
-    },
-    allowedHeaders: ["Content-Type", "Authorization"],
-    methods: ["POST"],
-  }),
-);
 
 app.use(express.json());
 

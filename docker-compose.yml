@@ -18,7 +18,7 @@ services:
   grpc-server:
     build:
       context: .
-      dockerfile: Dockerfile.server
+      dockerfile: cmd/server/Dockerfile
     environment:
       DATABASE_URL: postgres://otto:otto@postgres/otto?sslmode=disable
       GRPC_ADDR: ":50051"
@@ -29,30 +29,30 @@ services:
   gateway:
     build:
       context: .
-      dockerfile: Dockerfile.gateway
+      dockerfile: gateway/Dockerfile
     environment:
       GRPC_BASE_URL: grpc-server:50051
       PORT: "3000"
-      SKIP_AUTH: "true"
-      DEV_TENANT_ID: "00000000-0000-0000-0000-000000000001"
-      ALLOWED_ORIGINS: "http://localhost:4001"
+      TENANT_ID: "00000000-0000-0000-0000-000000000001"
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
     ports:
       - "4000:3000"
     depends_on:
       - grpc-server
 
-  web:
+  tui:
     build:
-      context: web
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: gateway/Dockerfile
+    command: npx tsx src/tui.ts
     environment:
       GATEWAY_URL: http://gateway:3000
-      SKIP_AUTH: "true"
-    ports:
-      - "4001:3000"
+    stdin_open: true
+    tty: true
     depends_on:
       - gateway
+    profiles:
+      - tui
 
 volumes:
   postgres_data:
