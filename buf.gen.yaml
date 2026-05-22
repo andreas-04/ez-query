@@ -8,3 +8,6 @@ plugins:
   - remote: buf.build/grpc/go
     out: internal/gen
     opt: paths=source_relative
+  - local: protoc-gen-mcp
+    out: internal/gen
+    opt: paths=source_relative

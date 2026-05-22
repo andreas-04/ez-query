@@ -1,23 +1,23 @@
 /**
- * Otto — simple readline chat TUI
+ * Otto — chat TUI
  *
- * Sends messages to the gateway /chat endpoint and displays responses.
- * Zero extra dependencies: uses only built-in Node.js modules.
+ * Talk to Claude with the Go MCP server's tools wired in.  Claude decides
+ * which tools to call; the TUI shows tool activity and prints the reply.
  *
- * Usage:
- *   cd gateway && npm run tui
- *   GATEWAY_URL=http://localhost:3000 npm run tui
+ * Commands:
+ *   <anything>            Chat with the agent
+ *   /tool <name> [json]   Call a tool directly (debug)
+ *   help                  List available tools
+ *   reset                 Clear conversation history
+ *   exit / quit           Quit
  */
 
 import "./env"; // must be first — loads .env before anything else
 import { createInterface } from "node:readline/promises";
-import { randomUUID } from "node:crypto";
 import { stdin, stdout } from "node:process";
-
-// ─── Config ───────────────────────────────────────────────────────────────────
-
-const GATEWAY_URL = (process.env.GATEWAY_URL ?? "http://localhost:3000").replace(/\/$/, "");
-const SESSION_ID = randomUUID();
+import Anthropic from "@anthropic-ai/sdk";
+import { listTools, callTool, type AnthropicTool } from "./mcp-client";
+import { chat, newHistory } from "./agent";
 
 // ─── ANSI helpers ─────────────────────────────────────────────────────────────
 
@@ -29,85 +29,145 @@ const CYAN   = "\x1b[36m";
 const RED    = "\x1b[31m";
 const YELLOW = "\x1b[33m";
 
-// Erase the current terminal line (used to wipe the "thinking…" indicator).
 const CLEAR_LINE = "\r\x1b[K";
 
-// ─── Gateway client ───────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-interface ChatResponse {
-  reply: string;
-  tool_calls: string[];
+function printTools(tools: AnthropicTool[]): void {
+  console.log(`\n  ${BOLD}Available tools${R} (${tools.length})\n`);
+  for (const t of tools) {
+    const desc = t.description?.split("\n")[0] ?? "";
+    console.log(`  ${CYAN}${t.name}${R}`);
+    if (desc) console.log(`    ${DIM}${desc}${R}`);
+  }
+  console.log();
 }
 
-async function chat(message: string): Promise<ChatResponse> {
-  const url = `${GATEWAY_URL}/chat`;
-  const body = JSON.stringify({ message, session_id: SESSION_ID });
+function parseToolCommand(raw: string): { toolName: string; args: Record<string, unknown> } {
+  // raw is "/tool <name> [json]" — strip the prefix first.
+  const body = raw.slice("/tool".length).trim();
+  const space = body.indexOf(" ");
+  const toolName = space === -1 ? body : body.slice(0, space).trim();
+  const rest     = space === -1 ? "" : body.slice(space + 1).trim();
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body,
-  });
+  if (!toolName) throw new Error("usage: /tool <name> [json-args]");
 
-  const json: any = await res.json().catch(() => null);
-
-  if (!res.ok) {
-    const reason = json?.error ?? `HTTP ${res.status}`;
-    throw new Error(reason);
+  let args: Record<string, unknown> = {};
+  if (rest) {
+    const parsed = JSON.parse(rest);
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+      throw new Error("args must be a JSON object");
+    }
+    args = parsed;
   }
-
-  return {
-    reply: String(json?.reply ?? ""),
-    tool_calls: Array.isArray(json?.tool_calls) ? json.tool_calls : [],
-  };
+  return { toolName, args };
 }
 
 // ─── Entry point ──────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
-  const rl = createInterface({ input: stdin, output: stdout, terminal: true });
+  const MCP_URL = (process.env.MCP_URL ?? "http://localhost:8080");
+  const MODEL   = process.env.ANTHROPIC_MODEL ?? "claude-haiku-4-5";
+
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.error(`${RED}${BOLD}ANTHROPIC_API_KEY is not set.${R} Add it to .env and try again.\n`);
+    process.exit(1);
+  }
 
   // Banner
   console.log();
-  console.log(`  ${BOLD}${GREEN}otto${R}${BOLD} workforce assistant${R}`);
-  console.log(`  ${DIM}session  ${SESSION_ID}${R}`);
-  console.log(`  ${DIM}gateway  ${GATEWAY_URL}${R}`);
-  console.log(`  ${DIM}type a message, or ${YELLOW}exit${R}${DIM} to quit${R}`);
+  console.log(`  ${BOLD}${GREEN}otto${R}${BOLD} chat${R}`);
+  console.log(`  ${DIM}server  ${MCP_URL}${R}`);
+  console.log(`  ${DIM}model   ${MODEL}${R}`);
+  console.log(`  ${DIM}type ${YELLOW}help${R}${DIM} for tools, ${YELLOW}reset${R}${DIM} to clear history, ${YELLOW}exit${R}${DIM} to quit${R}`);
   console.log();
 
-  while (true) {
-    let input: string;
+  // Eagerly load tools so the first call is fast.
+  stdout.write(`${DIM}connecting…${R}`);
+  let tools: AnthropicTool[];
+  try {
+    tools = await listTools();
+    stdout.write(CLEAR_LINE);
+  } catch (err) {
+    stdout.write(CLEAR_LINE);
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`${RED}${BOLD}Failed to connect to MCP server:${R} ${msg}`);
+    console.error(`${DIM}Is the server running at ${MCP_URL}?${R}\n`);
+    process.exit(1);
+  }
 
+  console.log(`${DIM}Connected — ${tools.length} tools available.${R}\n`);
+
+  const toolNames = new Set(tools.map((t) => t.name));
+  const anthropic = new Anthropic();
+  let history = newHistory();
+
+  const rl = createInterface({ input: stdin, output: stdout, terminal: true });
+
+  while (true) {
+    let raw: string;
     try {
-      input = (await rl.question(`${BOLD}You › ${R}`)).trim();
+      raw = (await rl.question(`${BOLD}› ${R}`)).trim();
     } catch {
-      // Ctrl+D / EOF
-      break;
+      break; // Ctrl+D / EOF
     }
 
-    if (!input) continue;
-    if (input === "exit" || input === "quit") break;
+    if (!raw) continue;
+    if (raw === "exit" || raw === "quit") break;
 
-    // Show a "thinking" indicator on the same line while awaiting the response.
+    if (raw === "help") {
+      printTools(tools);
+      continue;
+    }
+
+    if (raw === "reset") {
+      history = newHistory();
+      console.log(`${DIM}conversation cleared${R}\n`);
+      continue;
+    }
+
+    if (raw.startsWith("/tool")) {
+      let parsed: { toolName: string; args: Record<string, unknown> };
+      try {
+        parsed = parseToolCommand(raw);
+      } catch (err) {
+        console.log(`\n${RED}${err instanceof Error ? err.message : err}${R}\n`);
+        continue;
+      }
+      if (!toolNames.has(parsed.toolName)) {
+        console.log(`\n${RED}Unknown tool:${R} ${parsed.toolName}\n`);
+        continue;
+      }
+      stdout.write(`${DIM}calling ${parsed.toolName}…${R}`);
+      try {
+        const result = await callTool(parsed.toolName, parsed.args);
+        stdout.write(CLEAR_LINE);
+        try {
+          console.log(`\n${JSON.stringify(JSON.parse(result), null, 2)}\n`);
+        } catch {
+          console.log(`\n${result}\n`);
+        }
+      } catch (err) {
+        stdout.write(CLEAR_LINE);
+        const msg = err instanceof Error ? err.message : String(err);
+        console.log(`\n${RED}${BOLD}Error:${R} ${msg}\n`);
+      }
+      continue;
+    }
+
+    // Chat path.
     stdout.write(`${DIM}thinking…${R}`);
-
-    let response: ChatResponse;
     try {
-      response = await chat(input);
+      const { reply } = await chat(anthropic, tools, history, raw, (name) => {
+        stdout.write(`${CLEAR_LINE}${DIM}→ ${name}${R}\n${DIM}thinking…${R}`);
+      });
+      stdout.write(CLEAR_LINE);
+      console.log(`\n${reply}\n`);
     } catch (err) {
       stdout.write(CLEAR_LINE);
       const msg = err instanceof Error ? err.message : String(err);
       console.log(`\n${RED}${BOLD}Error:${R} ${msg}\n`);
-      continue;
     }
-
-    stdout.write(CLEAR_LINE);
-
-    if (response.tool_calls.length > 0) {
-      console.log(`${DIM}[tools: ${response.tool_calls.join(", ")}]${R}`);
-    }
-
-    console.log(`\n${CYAN}${BOLD}Otto › ${R}${response.reply}\n`);
   }
 
   console.log(`\n${DIM}goodbye!${R}\n`);
