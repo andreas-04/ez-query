@@ -2,11 +2,11 @@
 
 ## What?
 
-Proof of concept for using NL to interface with a postgress DB using the Claude API
+Proof of concept demonstrating [protoc-gen-mcp](https://github.com/andreas-04/protoc-gen-mcp): NL interface to a postgres DB driven by an MCP server generated from `.proto` definitions.
 
 ## How?
 
-Defining custom claude tools for interfacing with a gRPC service and a simple TUI.
+A gRPC service exposes DB operations; `protoc-gen-mcp` turns its proto definitions into an MCP server that Claude calls through a simple TUI.
 
 ## Try it out
 
