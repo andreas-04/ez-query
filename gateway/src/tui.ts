@@ -102,7 +102,9 @@ async function main(): Promise<void> {
   const anthropic = new Anthropic();
   let history = newHistory();
 
-  const rl = createInterface({ input: stdin, output: stdout, terminal: true });
+  // Mirror stdin's TTY-ness so piped/heredoc input behaves like script input
+  // (one line per prompt) instead of being bundled by readline's terminal mode.
+  const rl = createInterface({ input: stdin, output: stdout, terminal: stdin.isTTY });
 
   while (true) {
     let raw: string;

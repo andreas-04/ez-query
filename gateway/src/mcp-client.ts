@@ -10,6 +10,7 @@
  */
 
 const MCP_URL = (process.env.MCP_URL ?? "http://localhost:8080").replace(/\/$/, "");
+const MCP_TIMEOUT_MS = Number(process.env.MCP_TIMEOUT_MS ?? 30_000);
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -48,22 +49,44 @@ function nextId(): number {
 
 // ── HTTP helper ────────────────────────────────────────────────────────────────
 
-async function post(method: string, params: unknown, id?: number): Promise<unknown> {
+class StaleSessionError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "StaleSessionError";
+  }
+}
+
+async function rawPost(method: string, params: unknown, id?: number): Promise<unknown> {
   const body: Record<string, unknown> = { jsonrpc: "2.0", method, params };
   if (id !== undefined) body.id = id;
 
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (_sessionId) headers["Mcp-Session-Id"] = _sessionId;
 
-  const res = await fetch(MCP_URL, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(body),
-  });
+  let res: Response;
+  try {
+    res = await fetch(MCP_URL, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(MCP_TIMEOUT_MS),
+    });
+  } catch (err) {
+    if (err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError")) {
+      throw new Error(`MCP request timed out after ${MCP_TIMEOUT_MS}ms (method=${method})`);
+    }
+    throw err;
+  }
 
   // Capture session ID if the server provides one.
   const sid = res.headers.get("Mcp-Session-Id");
   if (sid && !_sessionId) _sessionId = sid;
+
+  // Server rejected our cached session (typical after a restart). Surface a
+  // distinct error so the caller can re-initialise and retry once.
+  if (res.status === 404 && _sessionId) {
+    throw new StaleSessionError(`MCP session ${_sessionId} no longer recognised`);
+  }
 
   // Notifications return 202 Accepted with no body.
   if (res.status === 202) return null;
@@ -84,9 +107,28 @@ async function post(method: string, params: unknown, id?: number): Promise<unkno
 
   const json = JSON.parse(text);
   if ("error" in json) {
-    throw new Error(`MCP error: ${JSON.stringify(json.error)}`);
+    // Some servers return JSON-RPC errors for stale sessions rather than 404.
+    const msg = JSON.stringify(json.error);
+    if (_sessionId && /session/i.test(msg)) {
+      throw new StaleSessionError(`MCP session ${_sessionId} rejected: ${msg}`);
+    }
+    throw new Error(`MCP error: ${msg}`);
   }
   return json.result;
+}
+
+// post wraps rawPost with one-shot session recovery: if the cached session is
+// stale (server restarted), drop it and re-initialise once before retrying.
+async function post(method: string, params: unknown, id?: number): Promise<unknown> {
+  try {
+    return await rawPost(method, params, id);
+  } catch (err) {
+    if (!(err instanceof StaleSessionError)) throw err;
+    _sessionId = undefined;
+    _initPromise = undefined;
+    await ensureSession();
+    return rawPost(method, params, id);
+  }
 }
 
 // ── Session init ───────────────────────────────────────────────────────────────

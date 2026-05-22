@@ -90,7 +90,7 @@ func (s *SchedulingServer) ListShifts(ctx context.Context, req *schedulingv1.Lis
 	q := dbQ(ctx, s.db)
 	rows, err := q.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "query shifts: %v", err)
+		return nil, dbErr(err, "query shifts")
 	}
 	defer rows.Close()
 
@@ -98,12 +98,12 @@ func (s *SchedulingServer) ListShifts(ctx context.Context, req *schedulingv1.Lis
 	for rows.Next() {
 		sh, err := scanShiftRows(rows)
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "scan shift: %v", err)
+			return nil, dbErr(err, "scan shift")
 		}
 		shifts = append(shifts, sh)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, status.Errorf(codes.Internal, "rows error: %v", err)
+		return nil, dbErr(err, "rows")
 	}
 	return &schedulingv1.ListShiftsResponse{
 		Shifts:     shifts,
@@ -167,7 +167,7 @@ func (s *SchedulingServer) RequestTimeOff(ctx context.Context, req *schedulingv1
 		TenantIDFromCtx(ctx), req.EmployeeId, req.StartDate, req.EndDate, req.Reason,
 	)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "insert time_off_request: %v", err)
+		return nil, dbErr(err, "insert time_off_request")
 	}
 	return &schedulingv1.TimeOffResponse{
 		Approved: true,
@@ -200,7 +200,7 @@ func (s *SchedulingServer) GetAvailability(ctx context.Context, req *schedulingv
 		req.DateRange.StartDate+"T00:00:00Z",
 	)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "query shifts: %v", err)
+		return nil, dbErr(err, "query shifts")
 	}
 	defer shiftRows.Close()
 
@@ -208,12 +208,12 @@ func (s *SchedulingServer) GetAvailability(ctx context.Context, req *schedulingv
 	for shiftRows.Next() {
 		sh, err := scanShiftRows(shiftRows)
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "scan shift: %v", err)
+			return nil, dbErr(err, "scan shift")
 		}
 		shifts = append(shifts, sh)
 	}
 	if err := shiftRows.Err(); err != nil {
-		return nil, status.Errorf(codes.Internal, "rows error: %v", err)
+		return nil, dbErr(err, "rows")
 	}
 
 	// Approved days-off within the range (expanded to individual dates by Postgres).
@@ -231,7 +231,7 @@ func (s *SchedulingServer) GetAvailability(ctx context.Context, req *schedulingv
 		req.DateRange.EndDate,
 	)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "query days_off: %v", err)
+		return nil, dbErr(err, "query days_off")
 	}
 	defer dayRows.Close()
 
@@ -239,12 +239,12 @@ func (s *SchedulingServer) GetAvailability(ctx context.Context, req *schedulingv
 	for dayRows.Next() {
 		var d string
 		if err := dayRows.Scan(&d); err != nil {
-			return nil, status.Errorf(codes.Internal, "scan day_off: %v", err)
+			return nil, dbErr(err, "scan day_off")
 		}
 		daysOff = append(daysOff, d)
 	}
 	if err := dayRows.Err(); err != nil {
-		return nil, status.Errorf(codes.Internal, "rows error: %v", err)
+		return nil, dbErr(err, "rows")
 	}
 
 	return &schedulingv1.GetAvailabilityResponse{
@@ -260,12 +260,8 @@ func (s *SchedulingServer) GetAvailability(ctx context.Context, req *schedulingv
 func scanShiftRow(row *sql.Row) (*schedulingv1.Shift, error) {
 	var sh schedulingv1.Shift
 	var st int32
-	err := row.Scan(&sh.Id, &sh.EmployeeId, &sh.StartTime, &sh.EndTime, &st, &sh.Notes, &sh.CreatedAt)
-	if err == sql.ErrNoRows {
-		return nil, status.Error(codes.NotFound, "shift not found")
-	}
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "scan shift: %v", err)
+	if err := row.Scan(&sh.Id, &sh.EmployeeId, &sh.StartTime, &sh.EndTime, &st, &sh.Notes, &sh.CreatedAt); err != nil {
+		return nil, dbErr(err, "scan shift")
 	}
 	sh.Status = commonv1.ShiftStatus(st)
 	return &sh, nil

@@ -55,7 +55,7 @@ func (s *EmployeeServer) ListEmployees(ctx context.Context, req *employeev1.List
 
 	if req.Department != nil {
 		args = append(args, *req.Department)
-		query += fmt.Sprintf(" AND department = $%d", len(args))
+		query += fmt.Sprintf(" AND LOWER(department) = LOWER($%d)", len(args))
 	}
 	if req.WorkerType != nil {
 		args = append(args, int32(*req.WorkerType))
@@ -66,7 +66,7 @@ func (s *EmployeeServer) ListEmployees(ctx context.Context, req *employeev1.List
 	q := dbQ(ctx, s.db)
 	rows, err := q.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "query employees: %v", err)
+		return nil, dbErr(err, "query employees")
 	}
 	defer rows.Close()
 
@@ -74,12 +74,12 @@ func (s *EmployeeServer) ListEmployees(ctx context.Context, req *employeev1.List
 	for rows.Next() {
 		e, err := scanEmployeeRow(rows)
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "scan employee: %v", err)
+			return nil, dbErr(err, "scan employee")
 		}
 		employees = append(employees, e)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, status.Errorf(codes.Internal, "rows error: %v", err)
+		return nil, dbErr(err, "rows")
 	}
 
 	return &employeev1.ListEmployeesResponse{
@@ -96,12 +96,8 @@ func scanEmployee(row *sql.Row) (*employeev1.Employee, error) {
 	var e employeev1.Employee
 	var workerType int32
 	var createdAt string
-	err := row.Scan(&e.Id, &e.Name, &e.Email, &e.Department, &workerType, &createdAt)
-	if err == sql.ErrNoRows {
-		return nil, status.Error(codes.NotFound, "employee not found")
-	}
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "scan employee: %v", err)
+	if err := row.Scan(&e.Id, &e.Name, &e.Email, &e.Department, &workerType, &createdAt); err != nil {
+		return nil, dbErr(err, "scan employee")
 	}
 	e.WorkerType = commonv1.WorkerType(workerType)
 	e.CreatedAt = createdAt

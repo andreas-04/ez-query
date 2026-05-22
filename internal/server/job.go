@@ -51,7 +51,7 @@ func (s *JobServer) CreateJob(ctx context.Context, req *jobv1.CreateJobRequest) 
 
 	var id, createdAt string
 	if err := row.Scan(&id, &createdAt); err != nil {
-		return nil, status.Errorf(codes.Internal, "insert job: %v", err)
+		return nil, dbErr(err, "insert job")
 	}
 	return s.fetchJob(ctx, id)
 }
@@ -90,14 +90,14 @@ func (s *JobServer) ListJobs(ctx context.Context, req *jobv1.ListJobsRequest) (*
 	}
 	if req.City != nil {
 		args = append(args, *req.City)
-		query += fmt.Sprintf(" AND j.loc_city = $%d", len(args))
+		query += fmt.Sprintf(" AND LOWER(j.loc_city) = LOWER($%d)", len(args))
 	}
 	query += " ORDER BY j.id"
 
 	q := dbQ(ctx, s.db)
 	idRows, err := q.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "query jobs: %v", err)
+		return nil, dbErr(err, "query jobs")
 	}
 	defer idRows.Close()
 
@@ -105,12 +105,12 @@ func (s *JobServer) ListJobs(ctx context.Context, req *jobv1.ListJobsRequest) (*
 	for idRows.Next() {
 		var id string
 		if err := idRows.Scan(&id); err != nil {
-			return nil, status.Errorf(codes.Internal, "scan job id: %v", err)
+			return nil, dbErr(err, "scan job id")
 		}
 		ids = append(ids, id)
 	}
 	if err := idRows.Err(); err != nil {
-		return nil, status.Errorf(codes.Internal, "rows error: %v", err)
+		return nil, dbErr(err, "rows")
 	}
 
 	jobs := make([]*jobv1.Job, 0, len(ids))
@@ -151,7 +151,7 @@ func (s *JobServer) AssignEmployees(ctx context.Context, req *jobv1.AssignEmploy
 	)
 	q := dbQ(ctx, s.db)
 	if _, err := q.ExecContext(ctx, query, args...); err != nil {
-		return nil, status.Errorf(codes.Internal, "assign employees: %v", err)
+		return nil, dbErr(err, "assign employees")
 	}
 	return s.fetchJob(ctx, req.JobId)
 }
@@ -183,7 +183,7 @@ func (s *JobServer) UpdateJobStatus(ctx context.Context, req *jobv1.UpdateJobSta
 	q := dbQ(ctx, s.db)
 	res, err := q.ExecContext(ctx, query, args...)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "update job status: %v", err)
+		return nil, dbErr(err, "update job status")
 	}
 	if n, _ := res.RowsAffected(); n == 0 {
 		return nil, status.Error(codes.NotFound, "job not found")
@@ -211,16 +211,12 @@ func (s *JobServer) GetJobLocation(ctx context.Context, req *jobv1.GetJobLocatio
 	var jl jobv1.JobLocation
 	var addr commonv1.Address
 	var lat, lng float64
-	err := row.Scan(
+	if err := row.Scan(
 		&jl.JobId,
 		&addr.Line1, &addr.Line2, &addr.City, &addr.State, &addr.Postcode, &addr.Country,
 		&lat, &lng,
-	)
-	if err == sql.ErrNoRows {
-		return nil, status.Error(codes.NotFound, "job not found")
-	}
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "scan job_location: %v", err)
+	); err != nil {
+		return nil, dbErr(err, "scan job_location")
 	}
 	jl.Address = &addr
 	jl.Coordinates = &jobv1.Coordinates{Lat: lat, Lng: lng}
@@ -245,18 +241,14 @@ func (s *JobServer) fetchJob(ctx context.Context, id string) (*jobv1.Job, error)
 	var j jobv1.Job
 	var st int32
 	var addr commonv1.Address
-	err := row.Scan(
+	if err := row.Scan(
 		&j.Id, &j.Title, &j.Description, &st,
 		&addr.Line1, &addr.Line2, &addr.City, &addr.State, &addr.Postcode, &addr.Country,
 		&j.ScheduledStart, &j.ScheduledEnd,
 		&j.ActualStart, &j.ActualEnd,
 		&j.CreatedAt,
-	)
-	if err == sql.ErrNoRows {
-		return nil, status.Error(codes.NotFound, "job not found")
-	}
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "scan job: %v", err)
+	); err != nil {
+		return nil, dbErr(err, "scan job")
 	}
 	j.Status = commonv1.JobStatus(st)
 	j.Location = &addr
@@ -265,13 +257,13 @@ func (s *JobServer) fetchJob(ctx context.Context, id string) (*jobv1.Job, error)
 	eidRows, err := q.QueryContext(ctx,
 		"SELECT employee_id FROM job_employees WHERE job_id = $1 ORDER BY employee_id", id)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "query job_employees: %v", err)
+		return nil, dbErr(err, "query job_employees")
 	}
 	defer eidRows.Close()
 	for eidRows.Next() {
 		var eid string
 		if err := eidRows.Scan(&eid); err != nil {
-			return nil, status.Errorf(codes.Internal, "scan employee_id: %v", err)
+			return nil, dbErr(err, "scan employee_id")
 		}
 		j.AssignedEmployeeIds = append(j.AssignedEmployeeIds, eid)
 	}

@@ -80,7 +80,7 @@ func (s *PayrollServer) GetPayroll(ctx context.Context, req *payrollv1.GetPayrol
 	q := dbQ(ctx, s.db)
 	rows, err := q.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "query pay_runs: %v", err)
+		return nil, dbErr(err, "query pay_runs")
 	}
 	defer rows.Close()
 
@@ -88,12 +88,12 @@ func (s *PayrollServer) GetPayroll(ctx context.Context, req *payrollv1.GetPayrol
 	for rows.Next() {
 		r, err := scanPayRun(rows)
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "scan pay_run: %v", err)
+			return nil, dbErr(err, "scan pay_run")
 		}
 		runs = append(runs, r)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, status.Errorf(codes.Internal, "rows error: %v", err)
+		return nil, dbErr(err, "rows")
 	}
 
 	return &payrollv1.GetPayrollResponse{
@@ -124,7 +124,7 @@ func (s *PayrollServer) GetPaySchedule(ctx context.Context, req *payrollv1.GetPa
 		return nil, status.Error(codes.NotFound, "pay schedule not found for employee")
 	}
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "scan pay_schedule: %v", err)
+		return nil, dbErr(err, "scan pay_schedule")
 	}
 	ps.Frequency = commonv1.PayFrequency(freq)
 	return &ps, nil
@@ -162,7 +162,7 @@ func (s *PayrollServer) ListPayRuns(ctx context.Context, req *payrollv1.ListPayR
 	q2 := dbQ(ctx, s.db)
 	rows, err := q2.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "query pay_runs: %v", err)
+		return nil, dbErr(err, "query pay_runs")
 	}
 	defer rows.Close()
 
@@ -170,12 +170,12 @@ func (s *PayrollServer) ListPayRuns(ctx context.Context, req *payrollv1.ListPayR
 	for rows.Next() {
 		r, err := scanPayRun(rows)
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "scan pay_run: %v", err)
+			return nil, dbErr(err, "scan pay_run")
 		}
 		runs = append(runs, r)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, status.Errorf(codes.Internal, "rows error: %v", err)
+		return nil, dbErr(err, "rows")
 	}
 
 	return &payrollv1.ListPayRunsResponse{
@@ -230,7 +230,7 @@ func (s *PayrollServer) GetPayRates(ctx context.Context, req *payrollv1.GetPayRa
 		return nil, status.Error(codes.NotFound, "pay rates not found for employee")
 	}
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "scan pay_rates: %v", err)
+		return nil, dbErr(err, "scan pay_rates")
 	}
 	return pr, nil
 }
@@ -276,7 +276,7 @@ func (s *PayrollServer) SetPayRates(ctx context.Context, req *payrollv1.SetPayRa
 	)
 	pr, err := scanPayRates(row)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "upsert pay_rates: %v", err)
+		return nil, dbErr(err, "upsert pay_rates")
 	}
 	return pr, nil
 }
@@ -330,7 +330,7 @@ func (s *PayrollServer) CalculatePayPreview(ctx context.Context, req *payrollv1.
 		return nil, status.Error(codes.NotFound, "pay rates not configured for employee — call set_pay_rates first")
 	}
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "fetch pay_rates: %v", err)
+		return nil, dbErr(err, "fetch pay_rates")
 	}
 
 	// Fetch all SCHEDULED (1) and COMPLETED (2) shifts in the period.
@@ -347,7 +347,7 @@ func (s *PayrollServer) CalculatePayPreview(ctx context.Context, req *payrollv1.
 		periodStart,
 	)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "query shifts: %v", err)
+		return nil, dbErr(err, "query shifts")
 	}
 	defer shiftDbRows.Close()
 
@@ -356,7 +356,7 @@ func (s *PayrollServer) CalculatePayPreview(ctx context.Context, req *payrollv1.
 		var startT, endT time.Time
 		var shiftStatus int
 		if err := shiftDbRows.Scan(&startT, &endT, &shiftStatus); err != nil {
-			return nil, status.Errorf(codes.Internal, "scan shift: %v", err)
+			return nil, dbErr(err, "scan shift")
 		}
 		// Clamp to period boundaries.
 		if startT.Before(periodStart) {
@@ -372,7 +372,7 @@ func (s *PayrollServer) CalculatePayPreview(ctx context.Context, req *payrollv1.
 		})
 	}
 	if err := shiftDbRows.Err(); err != nil {
-		return nil, status.Errorf(codes.Internal, "rows error: %v", err)
+		return nil, dbErr(err, "rows")
 	}
 
 	// ── Categorise hours ────────────────────────────────────────────────────
