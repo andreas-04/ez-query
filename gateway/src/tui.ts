@@ -126,7 +126,7 @@ async function main(): Promise<void> {
       continue;
     }
 
-    if (raw.startsWith("/tool")) {
+    if (raw === "/tool" || raw.startsWith("/tool ")) {
       let parsed: { toolName: string; args: Record<string, unknown> };
       try {
         parsed = parseToolCommand(raw);

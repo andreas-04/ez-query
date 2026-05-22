@@ -107,8 +107,15 @@ async function _initialize(): Promise<void> {
 
 async function ensureSession(): Promise<void> {
   if (_sessionId) return;
-  // Serialise concurrent callers so we only initialise once.
-  if (!_initPromise) _initPromise = _initialize();
+  // Serialise concurrent callers so we only initialise once. If the in-flight
+  // attempt fails, clear the cached promise so the next caller gets a fresh
+  // initialize rather than awaiting the same rejection forever.
+  if (!_initPromise) {
+    _initPromise = _initialize().catch((err) => {
+      _initPromise = undefined;
+      throw err;
+    });
+  }
   await _initPromise;
 }
 

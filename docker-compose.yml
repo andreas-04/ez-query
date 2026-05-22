@@ -23,6 +23,9 @@ services:
       DATABASE_URL: postgres://otto:otto@postgres/otto?sslmode=disable
       GRPC_ADDR: ":50051"
       MCP_ADDR: ":8080"
+      # MCP dials back into the local gRPC server, but neither MCP nor the
+      # TUI currently propagate an x-tenant-id header. Use the seed tenant.
+      SKIP_AUTH_INTERCEPTOR: "true"
     ports:
       - "8080:8080"
     depends_on:
