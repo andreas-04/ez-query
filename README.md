@@ -2,9 +2,9 @@
 
 ## What?
 
-This is a proof of concept demonstrating [protoc-gen-mcp](https://github.com/andreas-04/protoc-gen-mcp), a tool for generating MCP servers that registers your gRPC services as tools for agents. 
+This is a proof of concept demonstrating [protoc-gen-mcp](https://github.com/andreas-04/protoc-gen-mcp), a protoc plugin that generates MCP servers from .proto definitions, exposing your gRPC services as agent-callable tools.
 
-This repo contains implementation of a `.proto` derived gRPC API and MCP server for workforce management (employee scheduling, job scheduling, and payroll management.) With a thin wrapper for an agentic dispatching loop which is driven by natural language over a TUI interface. 
+This repo contains the implementation of a `.proto` derived gRPC API and MCP server for workforce management (employee scheduling, job scheduling, and payroll management.) With a thin wrapper for an agentic dispatching loop which is driven by natural language over a terminal user interface. 
 
 ## How?
 
