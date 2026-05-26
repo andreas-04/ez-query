@@ -2,7 +2,9 @@
 
 ## What?
 
-Proof of concept demonstrating [protoc-gen-mcp](https://github.com/andreas-04/protoc-gen-mcp): NL interface to a postgres DB driven by an MCP server generated from `.proto` definitions.
+This is a proof of concept demonstrating [protoc-gen-mcp](https://github.com/andreas-04/protoc-gen-mcp), a tool for generating MCP servers that registers your gRPC services as tools for agents. 
+
+This repo contains implementation of a `.proto` derived gRPC API and MCP server for workforce management (employee scheduling, job scheduling, and payroll management.) With a thin wrapper for an agentic dispatching loop which is driven by natural language over a TUI interface. 
 
 ## How?
 
